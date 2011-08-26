@@ -1,3 +1,0 @@
-module Reporter
-  # Your code goes here...
-end
