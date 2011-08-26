@@ -1,0 +1,36 @@
+Reporter allows the creation of cacheable report data using a straightforward DSL and output to formats supported by Ruport.
+
+Creating a report:
+
+class UnpaidClaimsReport < ActiveRecord::Base
+  include Reporter::Report
+
+  report_parameter :age_in_days, :required => false, :default => 30
+  report_parameter :payers, :required => true
+  report_parameter :aging_type, :required => false, :default => :dos
+
+  report :title => "Claims that haven't been paid yet" do
+    #can also use a block to define dynamic group
+    group :payers, :totals => [ :billed]
+
+    # | Date of Service | Current Payer | Billed Amount | Age in Days |
+    # | Payer | Medicare |
+    # | 1/1/2011        | Medicare      | $100.00       | 180         |
+    group_rows do |payer|
+      payer.claims.unpaid
+      Payer.execute "select claims.dos, ..."
+    end
+
+    element :dos, "Date of Service
+    element :current_payer # => column label = "Current payer"
+    element :patient_name
+    element :billed, "Billed Amount"
+    element :age_in_days do |claim|
+      Date.today - claim.date_of_service
+    end
+
+  end
+end
+
+
+unpaid_claims_report
