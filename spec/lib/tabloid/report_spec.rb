@@ -1,33 +1,113 @@
 require "spec_helper"
+require 'fastercsv'
 
 describe Tabloid::Report do
-  class RowTestReport
-    RowData = [1,2,3]
 
-    include Tabloid::Report
+  context "producing output" do
+    class CsvReport
+      DATA=[
+            [1, 2],
+            [3, 4]
+        ]
+      include Tabloid::Report
+      element :col1
+      element :col2
 
-    report do
+      cache_key{'report'}
+
       rows do
-        [[1],[2]]
+        CsvReport::DATA
+      end
+    end
+
+    before do
+      @report = CsvReport.new
+    end
+
+    context "with memcached caching" do
+      before do
+        Tabloid.cache_engine = :memcached
+        Tabloid.cache_connection_options = {
+            :server => "localhost",
+            :port => "11211"
+        }
+      end
+      after do
+        Tabloid.cache_engine = nil
+      end
+
+      describe "#data" do
+        it "should cache after collecting the data" do
+          Dalli::Client.any_instance.stub(:get).and_return(nil)
+          Dalli::Client.any_instance.stub(:set).and_return(false)
+          Dalli::Client.any_instance.should_receive(:set).with('report', CsvReport::DATA.to_json).and_return(true)
+          @report.data
+        end
+
+        it "should return the cached data if it exists" do
+          Dalli::Client.any_instance.stub(:get).with('report').and_return(CsvReport::DATA.to_json)
+          Dalli::Client.any_instance.stub(:set).and_return(true)
+
+          @report.data.rows.should == CsvReport::DATA
+        end
+      end
+    end
+
+    describe "#to_csv" do
+      it "includes headers by default" do
+        csv_output = FasterCSV.parse(@report.to_csv)
+        headers    = csv_output.first
+        headers.first.should match(/col1/)
+        headers.last.should match(/col2/)
+      end
+      it "excludes headers upon request" do
+        @report.to_csv(:headers => false).should_not match(/col1.*col2/)
+      end
+
+      it "includes the data from the report" do
+        csv_output = FasterCSV.parse(@report.to_csv)
+        csv_output[1].should == ['1', '2']
+        csv_output[2].should == ['3', '4']
+      end
+    end
+
+    describe "#to_html" do
+      it "works" do
+        @report.to_html.should_not be_nil
       end
     end
   end
 
-  context "without grouping" do
-    describe "#data" do
-      subject { RowTestReport.new }
 
-      it("is an array of rows") do
-        subject.data.should be_a Array
-        subject.data.first.should be_a Array
-      end
+  describe "#element" do
+    class ElementTestReport
+      include Tabloid::Report
+      element :col1
+    end
 
-      it("should match the source row data") do
-        subject.data.should == [[1],[2]]
-      end
+    before do
+      @report = DataTestReport.new
+    end
+
+    it "adds a column to the report data" do
+      @report.columns[:col1].should_not be_nil
     end
   end
 
+  describe "#data" do
+    class DataTestReport
+      include Tabloid::Report
+      element :col1
+      element :col2
+    end
 
+    before do
+      @report = DataTestReport.new
+    end
+    it "has columns" do
+      @report.columns.should_not be_nil
+    end
+
+  end
 end
 
