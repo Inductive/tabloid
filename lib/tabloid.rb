@@ -3,10 +3,11 @@ module Tabloid
   # Your code goes here...
 end
 require 'ruport'
-require 'lib/tabloid/configuration'
-
-require 'lib/tabloid/report'
-require 'lib/tabloid/column_extensions'
-require 'lib/tabloid/column'
-require 'lib/tabloid/data'
+require 'tabloid/configuration'
+require 'tabloid/missing_parameter_error'
+require 'tabloid/parameter'
+require 'tabloid/report'
+require 'tabloid/column_extensions'
+require 'tabloid/column'
+require 'tabloid/data'
 

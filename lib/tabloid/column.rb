@@ -1,9 +1,11 @@
 module Tabloid
   class Column
     attr_accessor :key
+    attr_accessor :label
 
     def initialize(*args)
-      @key = args.first
+      self.key = args[0]
+      self.label = args[1]
     end
 
     def to_s

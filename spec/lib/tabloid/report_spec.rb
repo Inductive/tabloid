@@ -94,18 +94,41 @@ describe Tabloid::Report do
     end
   end
 
+  describe "#parameter" do
+    class ParameterTestReport
+      include Tabloid::Report
+      parameter :test_param
+      rows do
+        [[parameter(:test_param)]]
+      end
+    end
+    it "requires a parameter in the initializer" do
+      expect{ ParameterTestReport.new.prepare}.should raise_error(Tabloid::MissingParameterError, "Must supply :test_param when creating the report")
+    end
+
+    it "makes the parameter available in the report" do
+      report = ParameterTestReport.new.prepare(:test_param => "supercalifragilisticexpialidocious")
+      report.to_html.should match(/supercalifragilisticexpialidocious/)
+    end
+  end
+
   describe "#data" do
     class DataTestReport
       include Tabloid::Report
       element :col1
       element :col2
-    end
-
-    before do
-      @report = DataTestReport.new
+      rows do
+        [OpenStruct.new(:col1 => 1, :col2 => 2)]
+      end
     end
     it "has columns" do
-      @report.columns.should_not be_nil
+      report = DataTestReport.new
+      report.columns.should_not be_nil
+    end
+
+    it "can look up columns in rows by key" do
+      report = DataTestReport.new
+      report.data.rows.should include([1,2])
     end
 
   end

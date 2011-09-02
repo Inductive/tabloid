@@ -2,12 +2,21 @@ module Tabloid::Report
 
   def self.included(base)
     base.class_eval do
+      @report_parameters = []
       extend Tabloid::Report::ClassMethods
       include Tabloid::Report::InstanceMethods
     end
   end
 
   module ClassMethods
+    def parameter(*args)
+      @report_parameters << Tabloid::Parameter.new(*args)
+    end
+
+    def parameters
+      @report_parameters
+    end
+
     def columns
       @columns
     end
@@ -39,29 +48,43 @@ module Tabloid::Report
         @columns = []
         @columns.extend Tabloid::ColumnExtensions
       end
-      @columns << Tabloid::Column.new(args.first)
+      @columns << Tabloid::Column.new(args[0], args[1])
     end
   end
 
   module InstanceMethods
+    def prepare(options={})
+      @report_parameters = {}
+      parameters.each do |param|
+        value = options.delete param.key
+        raise Tabloid::MissingParameterError.new("Must supply :#{param.key} when creating the report") unless value
+        @report_parameters[param.key] = value
+      end
+      build_and_cache_data
+      self
+    end
+
     def columns
       self.class.columns
     end
 
+    def parameters
+      self.class.parameters
+    end
+
+    def parameter(key)
+      @report_parameters[key]
+    end
+
     def data
       load_from_cache if Tabloid.cache_enabled?
-      debugger
-      @data ||= begin
-        report_data = Tabloid::Data.new(:columns => self.columns, :rows => prepare_data)
-        cache_data( report_data.rows)
-        report_data
-      end
+      build_and_cache_data
       @data
     end
 
     def to_html(options = {:headers => true})
-      if options[:headers]
-        column_names = self.columns.map(&:to_s)
+      if options[:headers] && self.columns
+        column_names = self.columns.map(&:label)
       else
         column_names = nil
       end
@@ -72,7 +95,7 @@ module Tabloid::Report
 
     def to_csv(options={:headers => true})
       if options[:headers]
-        column_names = self.columns.map(&:to_s)
+        column_names = self.columns.map(&:label)
       else
         column_names = nil
       end
@@ -91,6 +114,8 @@ module Tabloid::Report
       end
     end
 
+
+    private
     def cache_data(data)
       if Tabloid.cache_engine == :memcached
         raise LocalJumpError.new("Must supply a cache_key block when caching is enabled") unless self.class.cache_key_block
@@ -107,7 +132,13 @@ module Tabloid::Report
       end
     end
 
-    private
+    def build_and_cache_data
+      @data ||= begin
+        report_data = Tabloid::Data.new(:columns => self.columns, :rows => prepare_data)
+        cache_data( report_data.rows)
+        report_data
+      end
+    end
 
     def load_from_cache
       if Tabloid.cache_enabled?
@@ -120,7 +151,15 @@ module Tabloid::Report
     end
 
     def prepare_data
-      instance_exec(&self.class.rows_block)
+      row_data = instance_exec(&self.class.rows_block)
+      unless row_data.first.is_a? Array
+        row_data.map! do |row|
+          columns.map do |col|
+            row.send(col.key)
+          end
+        end
+      end
+      row_data
     end
 
     def read_from_cache
