@@ -8,6 +8,6 @@ require 'tabloid/missing_parameter_error'
 require 'tabloid/parameter'
 require 'tabloid/report'
 require 'tabloid/column_extensions'
-require 'tabloid/column'
+require 'tabloid/report_column'
 require 'tabloid/data'
 

@@ -10,8 +10,8 @@ describe Tabloid::Report do
             [3, 4]
         ]
       include Tabloid::Report
-      element :col1
-      element :col2
+      element :col1, 'Col1'
+      element :col2, 'Col2'
 
       cache_key{'report'}
 
@@ -57,8 +57,8 @@ describe Tabloid::Report do
       it "includes headers by default" do
         csv_output = FasterCSV.parse(@report.to_csv)
         headers    = csv_output.first
-        headers.first.should match(/col1/)
-        headers.last.should match(/col2/)
+        headers.first.should match(/Col1/)
+        headers.last.should match(/Col2/)
       end
       it "excludes headers upon request" do
         @report.to_csv(:headers => false).should_not match(/col1.*col2/)
@@ -90,7 +90,7 @@ describe Tabloid::Report do
     end
 
     it "adds a column to the report data" do
-      @report.columns[:col1].should_not be_nil
+      @report.report_columns[:col1].should_not be_nil
     end
   end
 
@@ -123,12 +123,12 @@ describe Tabloid::Report do
     end
     it "has columns" do
       report = DataTestReport.new
-      report.columns.should_not be_nil
+      report.report_columns.should_not be_nil
     end
 
     it "can look up columns in rows by key" do
       report = DataTestReport.new
-      report.data.rows.should include([1,2])
+      report.data.rows.should include(['1','2'])
     end
 
   end

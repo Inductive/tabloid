@@ -1,5 +1,5 @@
 module Tabloid
-  class Column
+  class ReportColumn
     attr_accessor :key
     attr_accessor :label
 

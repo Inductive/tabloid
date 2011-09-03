@@ -17,8 +17,8 @@ module Tabloid::Report
       @report_parameters
     end
 
-    def columns
-      @columns
+    def report_columns
+      @report_columns
     end
 
     def cache_key(&block)
@@ -35,37 +35,37 @@ module Tabloid::Report
       @rows_block
     end
 
-    def report(*args, &block)
-      yield block if block_given?
-    end
-
     def rows(*args, &block)
       @rows_block = block
     end
 
     def element(*args, &block)
-      unless @columns
-        @columns = []
-        @columns.extend Tabloid::ColumnExtensions
+      unless @report_columns
+        @report_columns = []
+        @report_columns.extend Tabloid::ColumnExtensions
       end
-      @columns << Tabloid::Column.new(args[0], args[1])
+
+      @report_columns << Tabloid::ReportColumn.new(args[0], args[1])
     end
   end
 
   module InstanceMethods
     def prepare(options={})
+      before_prepare if self.respond_to?(:before_prepare)
       @report_parameters = {}
       parameters.each do |param|
         value = options.delete param.key
         raise Tabloid::MissingParameterError.new("Must supply :#{param.key} when creating the report") unless value
         @report_parameters[param.key] = value
       end
-      build_and_cache_data
+      data
+      after_prepare if self.respond_to?(:after_prepare)
+
       self
     end
 
-    def columns
-      self.class.columns
+    def report_columns
+      self.class.report_columns
     end
 
     def parameters
@@ -83,8 +83,8 @@ module Tabloid::Report
     end
 
     def to_html(options = {:headers => true})
-      if options[:headers] && self.columns
-        column_names = self.columns.map(&:label)
+      if options[:headers] && self.report_columns
+        column_names = self.report_columns.map(&:label)
       else
         column_names = nil
       end
@@ -95,7 +95,7 @@ module Tabloid::Report
 
     def to_csv(options={:headers => true})
       if options[:headers]
-        column_names = self.columns.map(&:label)
+        column_names = self.report_columns.map(&:label)
       else
         column_names = nil
       end
@@ -127,14 +127,14 @@ module Tabloid::Report
     end
 
     def cache_client
-      if Tabloid.cache_engine == :memcached
+      if Tabloid.cache_enabled?
         @cache_client ||= Dalli::Client.new("#{Tabloid.cache_connection_options['server'] || 'localhost'}:#{Tabloid.cache_connection_options['port']||'11211'}")
       end
     end
 
     def build_and_cache_data
       @data ||= begin
-        report_data = Tabloid::Data.new(:columns => self.columns, :rows => prepare_data)
+        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data)
         cache_data( report_data.rows)
         report_data
       end
@@ -144,7 +144,7 @@ module Tabloid::Report
       if Tabloid.cache_enabled?
         cached_data = read_from_cache
         if cached_data
-          @data = Tabloid::Data.new :columns => self.columns, :rows => JSON.parse(cached_data)
+          @data = Tabloid::Data.new :report_columns => self.report_columns, :rows => JSON.parse(cached_data)
         end
       end
 
@@ -154,8 +154,8 @@ module Tabloid::Report
       row_data = instance_exec(&self.class.rows_block)
       unless row_data.first.is_a? Array
         row_data.map! do |row|
-          columns.map do |col|
-            row.send(col.key)
+          report_columns.map do |col|
+            row.send(col.key).to_s
           end
         end
       end

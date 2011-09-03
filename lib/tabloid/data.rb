@@ -1,10 +1,10 @@
 module Tabloid
   class Data
-    attr_accessor :columns
+    attr_accessor :report_columns
     attr_accessor :rows
 
     def initialize(options = {})
-      self.columns = options[:columns]
+      self.report_columns = options[:report_columns]
       self.rows = options[:rows]
     end
 
