@@ -1,0 +1,52 @@
+class Tabloid::Group
+
+  attr_reader :rows
+  attr_reader :columns
+  attr_reader :label
+
+  def initialize(options)
+    @rows                 = options[:rows]
+    @columns              = options[:columns]
+    @visible_column_count = @columns.select { |col| !col.hidden? }.count
+    @total_required       = options[:with_total]
+    @label                = options[:label]
+    raise ArgumentError.new("Must supply row data to a Group") unless @rows
+  end
+
+  def total_required?
+    @total_required
+  end
+
+  def rows
+    if total_required?
+      summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
+      @rows + [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
+    else
+      @rows
+    end
+  end
+
+  def to_csv
+    rows.map(&:to_csv).join
+  end
+
+  def to_html
+    header_row_html + rows.map(&:to_html).join
+  end
+
+  private
+  def sum_rows(key)
+    @rows.inject(0) { |sum, row| sum + row[key] }
+  end
+
+  def header_row_html
+    if @label
+      html = Builder::XmlMarkup.new
+      html.tr(:class => "group_header") do |tr|
+        tr.td(label, {"colspan" => @visible_column_count})
+      end
+    else
+      ""
+    end
+  end
+end
