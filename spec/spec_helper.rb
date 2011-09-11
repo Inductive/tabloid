@@ -1,3 +1,5 @@
 require 'tabloid'
 require 'dalli'
-require 'json'
+
+require 'nokogiri'
+require 'fastercsv'

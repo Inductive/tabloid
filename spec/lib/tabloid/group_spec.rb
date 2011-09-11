@@ -1,6 +1,4 @@
 require "spec_helper"
-require 'nokogiri'
-require 'fastercsv'
 
 describe Tabloid::Group do
   let(:columns) do
@@ -12,6 +10,7 @@ describe Tabloid::Group do
   let(:row1) { Tabloid::Row.new(:columns => columns, :data => [1, 2]) }
   let(:row2) { Tabloid::Row.new(:columns => columns, :data => [3, 4]) }
   let(:group) { Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :label => "foobar") }
+  let(:anon_group) { Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :label => false) }
 
   it "has a label" do
     group.label.should == "foobar"
@@ -19,11 +18,17 @@ describe Tabloid::Group do
 
   describe "producing output" do
     describe "as CSV" do
+      let(:rows) { FasterCSV.parse(group.to_csv) }
       it "includes all rows for the group" do
-        rows = FasterCSV.parse(group.to_csv)
-        rows.count.should == 2
         rows.should include(["1", "2"])
         rows.should include(["3", "4"])
+      end
+      it "includes a group label row" do
+        rows.should include(["foobar", nil])
+      end
+      it "doesn't include a label row when label is falsey" do
+        rows = FasterCSV.parse(anon_group.to_csv)
+        rows.should_not include(["foobar", nil])
       end
     end
     describe "as html" do
@@ -33,12 +38,11 @@ describe Tabloid::Group do
         (doc/"tr[class='data']").count.should == 2
       end
 
-      it "includes a label row" do
+      it "includes a group label row" do
         (doc/"tr[class = 'group_header']")[0].text.should == "foobar"
       end
       it "doesn't include a label row when label is false" do
-        group = Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :label => false)
-        doc = Nokogiri::HTML(group.to_html)
+        doc = Nokogiri::HTML(anon_group.to_html)
         (doc/"tr[class='group_header']").count.should == 0
       end
     end

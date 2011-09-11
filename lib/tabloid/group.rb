@@ -27,7 +27,7 @@ class Tabloid::Group
   end
 
   def to_csv
-    rows.map(&:to_csv).join
+    header_row_csv + rows.map(&:to_csv).join
   end
 
   def to_html
@@ -37,6 +37,16 @@ class Tabloid::Group
   private
   def sum_rows(key)
     @rows.inject(0) { |sum, row| sum + row[key] }
+  end
+
+  def header_row_csv
+    if @label
+      cols = [label]
+      (@visible_column_count-1).times{ cols << nil}
+      FasterCSV.generate{|csv| csv<<cols}
+    else
+      ""
+    end
   end
 
   def header_row_html

@@ -1,5 +1,4 @@
 require "spec_helper"
-require 'fastercsv'
 
 describe Tabloid::Report do
 
@@ -65,7 +64,6 @@ describe Tabloid::Report do
       end
 
       it "includes the data from the report" do
-        debugger
         csv_output = FasterCSV.parse(@report.to_csv)
         csv_output.should include( ['1', '2'])
         csv_output.should include( ['3', '4'])
@@ -120,7 +118,8 @@ describe Tabloid::Report do
 
     it "groups data by column specified" do
       report = GroupingTest.new
-      report.to_csv
+      data = FasterCSV.parse(report.to_csv)
+      data.should include(['1',nil])
     end
 
   end

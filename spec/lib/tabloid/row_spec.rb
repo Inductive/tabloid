@@ -1,6 +1,4 @@
 require "spec_helper"
-require 'nokogiri'
-require 'fastercsv'
 
 describe Tabloid::Row do
   before do

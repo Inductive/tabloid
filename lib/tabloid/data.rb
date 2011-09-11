@@ -23,13 +23,17 @@ module Tabloid
 
     private
     def convert_rows(rows)
-      #TODO: convert rows to Row objects before grouping
       rows.map! do |row|
         Tabloid::Row.new(:columns => @report_columns, :data => row)
       end
 
       if @grouping
-        rows = rows.group_by { |r| r[@grouping] }
+        if @grouping.is_a? Array
+          key, options = *@grouping
+        else
+          key = @grouping
+        end
+        rows = rows.group_by { |r| r[key] }
       else
         rows = {:default => rows}
       end

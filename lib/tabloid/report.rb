@@ -143,7 +143,7 @@ module Tabloid::Report
 
     def build_and_cache_data
       @data ||= begin
-        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data)
+        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data, :grouping => grouping_options)
         cache_data(report_data)
         report_data
       end
