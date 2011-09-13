@@ -1,12 +1,14 @@
 require "spec_helper"
 
 describe Tabloid::Row do
+  let(:columns) { [
+      Tabloid::ReportColumn.new(:col1, "Column 1", :hidden => true),
+      Tabloid::ReportColumn.new(:col2, "Column 2")
+  ] }
+  let(:data) { [1, 2] }
   before do
     @row = Tabloid::Row.new(
-        :columns => [
-            Tabloid::ReportColumn.new(:col1, "Column 1", :hidden => true),
-            Tabloid::ReportColumn.new(:col2, "Column 2")
-        ],
+        :columns => columns,
         :data    => [1, 2]
     )
   end
@@ -40,12 +42,26 @@ describe Tabloid::Row do
 
 
   end
-  describe "accessing contents with []" do
-    it "allows numeric access" do
-      @row[0].should == 1
+  context "with array data" do
+    describe "accessing contents with []" do
+      it "allows numeric access" do
+        @row[0].should == 1
+      end
+      it "allows access by element key" do
+        @row[:col1].should == 1
+      end
     end
-    it "allows access by element key" do
-      @row[:col1].should == 1
+  end
+  context "with object data" do
+    let(:data){OpenStruct.new({:col1 => 1, :col2 => 2})}
+    let(:row) { Tabloid::Row.new(:columns => columns, :data => data) }
+    describe "accessing contents with []" do
+      it "allows numeric access" do
+        row[0].should == 1
+      end
+      it "allows access by element key" do
+        row[:col1].should == 1
+      end
     end
   end
 end
