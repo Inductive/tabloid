@@ -15,6 +15,10 @@ module Tabloid::Report
       @report_parameters << Tabloid::Parameter.new(*args)
     end
 
+    def store_parameters(attribute)
+
+    end
+
     def parameters
       @report_parameters
     end

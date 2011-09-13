@@ -5,7 +5,6 @@ class Tabloid::Group
   attr_reader :label
 
   def initialize(options)
-    debugger
     @rows                 = options[:rows]
     @columns              = options[:columns]
     @visible_column_count = @columns.select { |col| !col.hidden? }.count
@@ -20,7 +19,6 @@ class Tabloid::Group
 
   def rows
     if total_required?
-      debugger
       summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
       @rows + [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
     else

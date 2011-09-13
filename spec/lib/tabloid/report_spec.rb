@@ -143,7 +143,8 @@ describe Tabloid::Report do
 
     it "serializes the parameters when #store_parameters is used" do
       report = ParameterTestReport.new
-      report.prepare(:test_param => )
+      report.prepare(:test_param => "test")
+      report.parameter_stash[:test_param].should == "test"
     end
 
     it "makes the parameter available in the report" do

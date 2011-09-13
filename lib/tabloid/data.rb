@@ -8,7 +8,7 @@ module Tabloid
       raise ArgumentError.new("Must supply column data") unless options[:report_columns]
 
       @report_columns = options[:report_columns]
-      @grouping_key     = options[:grouping_key] || :default
+      @grouping_key     = options[:grouping_key]
       @grouping_options = options[:grouping_options] || {:total => true}
 
       @rows = convert_rows(options[:rows])
