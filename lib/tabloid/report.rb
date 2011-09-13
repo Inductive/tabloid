@@ -42,11 +42,16 @@ module Tabloid::Report
     end
 
     def element(*args, &block)
-      @report_columns << Tabloid::ReportColumn.new(args[0], args[1])
+      @report_columns << Tabloid::ReportColumn.new(args[0], args[1], args[2])
     end
 
-    def grouping(*args)
-      @grouping_options = args
+    def grouping(key, options = {})
+      @grouping_key     = key
+      @grouping_options = options
+    end
+
+    def grouping_key
+      @grouping_key
     end
 
     def grouping_options
@@ -143,7 +148,7 @@ module Tabloid::Report
 
     def build_and_cache_data
       @data ||= begin
-        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data, :grouping => grouping_options)
+        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data, :grouping_key => grouping_key, :grouping_options => grouping_options)
         cache_data(report_data)
         report_data
       end
@@ -168,6 +173,10 @@ module Tabloid::Report
 
     def grouping_options
       self.class.grouping_options
+    end
+
+    def grouping_key
+      self.class.grouping_key
     end
 
   end

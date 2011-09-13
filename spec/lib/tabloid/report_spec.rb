@@ -121,20 +121,29 @@ describe Tabloid::Report do
       data = FasterCSV.parse(report.to_csv)
       data.should include(['1',nil])
     end
-
   end
 
   describe "#parameter" do
     class ParameterTestReport
+      attr_accessor :parameter_stash
+
       include Tabloid::Report
       parameter :test_param
+      store_parameters :parameter_stash
+
       element :col1, "Column 1"
       rows do
         [[parameter(:test_param)]]
       end
+
     end
     it "requires a parameter in the initializer" do
       expect{ ParameterTestReport.new.prepare}.should raise_error(Tabloid::MissingParameterError, "Must supply :test_param when creating the report")
+    end
+
+    it "serializes the parameters when #store_parameters is used" do
+      report = ParameterTestReport.new
+      report.prepare(:test_param => )
     end
 
     it "makes the parameter available in the report" do

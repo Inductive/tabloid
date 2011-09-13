@@ -21,7 +21,7 @@ describe Tabloid::Data do
     end
 
     it "puts rows into groups" do
-      data = Tabloid::Data.new(:report_columns => columns, :rows => rows, :grouping => :col1)
+      data = Tabloid::Data.new(:report_columns => columns, :rows => rows, :grouping_key => :col1)
       data.rows.first.should be_a(Tabloid::Group)
     end
   end

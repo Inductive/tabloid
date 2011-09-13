@@ -5,20 +5,22 @@ class Tabloid::Group
   attr_reader :label
 
   def initialize(options)
+    debugger
     @rows                 = options[:rows]
     @columns              = options[:columns]
     @visible_column_count = @columns.select { |col| !col.hidden? }.count
-    @total_required       = options[:with_total]
+    @total_required       = options[:total]
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
 
   def total_required?
-    @total_required
+    !(@total_required.nil? || @total_required == false)
   end
 
   def rows
     if total_required?
+      debugger
       summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
       @rows + [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
     else
@@ -36,7 +38,9 @@ class Tabloid::Group
 
   private
   def sum_rows(key)
-    @rows.inject(0) { |sum, row| sum + row[key] }
+    #use the initial value from the same set of addends to prevent type conflict
+    #like 0:Fixnum + 0:Money => Exception
+    @rows[1..-1].inject(@rows[0][key]) { |sum, row| sum + row[key] }
   end
 
   def header_row_csv

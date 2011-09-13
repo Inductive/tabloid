@@ -8,8 +8,10 @@ module Tabloid
       raise ArgumentError.new("Must supply column data") unless options[:report_columns]
 
       @report_columns = options[:report_columns]
-      @grouping       = options[:grouping]
-      @rows           = convert_rows(options[:rows])
+      @grouping_key     = options[:grouping_key] || :default
+      @grouping_options = options[:grouping_options] || {:total => true}
+
+      @rows = convert_rows(options[:rows])
 
     end
 
@@ -27,13 +29,8 @@ module Tabloid
         Tabloid::Row.new(:columns => @report_columns, :data => row)
       end
 
-      if @grouping
-        if @grouping.is_a? Array
-          key, options = *@grouping
-        else
-          key = @grouping
-        end
-        rows = rows.group_by { |r| r[key] }
+      if @grouping_key
+        rows = rows.group_by { |r| r[@grouping_key] }
       else
         rows = {:default => rows}
       end
@@ -42,7 +39,7 @@ module Tabloid
         data_rows = rows[key]
 
         label = (key == :default ? false : key)
-        Tabloid::Group.new :columns => @report_columns, :rows => data_rows, :label => label
+        Tabloid::Group.new :columns => @report_columns, :rows => data_rows, :label => label, :total => @grouping_options[:total]
       end
     end
 
@@ -56,7 +53,7 @@ module Tabloid
       headers = Builder::XmlMarkup.new
       headers.tr do |tr|
         @report_columns.each do |col|
-          tr.th(col.to_header, "class" => col.key)
+          tr.th(col.to_header, "class" => col.key) unless col.hidden?
         end
       end
     end

@@ -29,8 +29,7 @@ class Tabloid::Row
     html = Builder::XmlMarkup.new
     html.tr("class" => "data") do |tr|
       @columns.each_with_index do |col, index|
-        next if col.hidden?
-        tr.td(value_for_key(col, index), "class" => col.key)
+        tr.td(value_for_key(col, index), "class" => col.key) unless col.hidden?
       end
     end
   end

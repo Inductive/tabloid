@@ -53,7 +53,7 @@ describe Tabloid::Group do
               Tabloid::ReportColumn.new(:col1, "Column 1", :total => true),
               Tabloid::ReportColumn.new(:col2, "Column 2", :total => true)
           ]
-          total_group = Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :with_total => true)
+          total_group = Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :total => true)
           rows        = total_group.rows
           rows.count.should == 3
           rows.last[:col1].should == 4
