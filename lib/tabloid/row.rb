@@ -18,20 +18,24 @@ class Tabloid::Row
       csv_array = []
       @columns.each_with_index do |col, index|
         next if col.hidden?
-        val = value_for_key(col, index)
+        val = self[col.key]
         csv_array << val
       end
       csv << csv_array
     end
   end
 
-  def to_html
+  def to_html(options = {})
     html = Builder::XmlMarkup.new
-    html.tr("class" => "data") do |tr|
+    html.tr("class" => (options[:class] || "data")) do |tr|
       @columns.each_with_index do |col, index|
         tr.td(self[col.key], "class" => col.key) unless col.hidden?
       end
     end
+  end
+
+  def summarize(key, &block)
+    self[key]
   end
 
   def [](key)

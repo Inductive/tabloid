@@ -97,9 +97,9 @@ describe Tabloid::Report do
       @report.data.report_columns[0].key.to_s.should == "col1"
     end
 
-    it ""
-
   end
+
+
 
   describe "grouping" do
     class GroupingTest
@@ -135,8 +135,8 @@ describe Tabloid::Report do
       rows do
         [[parameter(:test_param)]]
       end
-
     end
+
     it "requires a parameter in the initializer" do
       expect{ ParameterTestReport.new.prepare}.should raise_error(Tabloid::MissingParameterError, "Must supply :test_param when creating the report")
     end

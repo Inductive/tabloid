@@ -46,6 +46,13 @@ describe Tabloid::Group do
         (doc/"tr[class='group_header']").count.should == 0
       end
     end
+
+    describe "#summarize" do
+      it "performs the supplied operation on the indicated column" do
+        group.summarize(:col1, &:+).should == 4
+        group.summarize(:col2, &:+).should == 6
+      end
+    end
     context "with totals enabled" do
       describe "#rows" do
         it "includes a total row" do

@@ -182,6 +182,5 @@ module Tabloid::Report
     def grouping_key
       self.class.grouping_key
     end
-
   end
 end

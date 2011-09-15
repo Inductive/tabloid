@@ -7,7 +7,7 @@ module Tabloid
       raise ArgumentError.new("Must supply row data") unless options[:rows]
       raise ArgumentError.new("Must supply column data") unless options[:report_columns]
 
-      @report_columns = options[:report_columns]
+      @report_columns   = options[:report_columns]
       @grouping_key     = options[:grouping_key]
       @grouping_options = options[:grouping_options] || {:total => true}
 
@@ -16,11 +16,11 @@ module Tabloid
     end
 
     def to_csv
-      header_csv + rows.map(&:to_csv).join
+      header_csv + rows.map(&:to_csv).join + summary_csv
     end
 
     def to_html
-      header_html + rows.map(&:to_html).join
+      header_html + rows.map(&:to_html).join + summary_html
     end
 
     private
@@ -56,6 +56,44 @@ module Tabloid
           tr.th(col.to_header, "class" => col.key) unless col.hidden?
         end
       end
+    end
+
+    def summary_html
+      summary_rows.map{|row| row.to_html(:class => "summary")}.join
+    end
+
+    def summary_csv
+      summary_rows.map(&:to_csv).join
+    end
+
+    #perform the supplied block on all rows in the data structure
+    def summarize(key, &block)
+      summaries = rows.map { |r| r.summarize(key, &:+) }
+        if summaries.any?
+          summaries[1..-1].inject(summaries[0]) do |summary, val|
+            block.call(summary, val)
+          end
+        else
+          nil
+        end
+    end
+
+    def summary_rows
+      data_summary = report_columns.map do |col|
+        summarize col.key, &:+ if col.total? && !col.hidden?
+      end
+
+      [
+          Tabloid::HeaderRow.new("Totals", :column_count => visible_column_count),
+          Tabloid::Row.new(:columns => @report_columns,
+                           :data => data_summary)
+
+      ]
+
+    end
+
+    def visible_column_count
+      @visible_col_count ||= @report_columns.select { |col| !col.hidden? }.count
     end
   end
 end

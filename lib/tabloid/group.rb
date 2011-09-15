@@ -26,6 +26,10 @@ class Tabloid::Group
     end
   end
 
+  def summarize(key, &block)
+    @rows[1..-1].inject(@rows[0].send(key)){|summary, row| block.call(summary, row.send(key))  }
+  end
+
   def to_csv
     header_row_csv + rows.map(&:to_csv).join
   end

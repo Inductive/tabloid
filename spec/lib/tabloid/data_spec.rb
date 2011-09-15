@@ -4,7 +4,7 @@ describe Tabloid::Data do
   let(:columns) do
     [
         Tabloid::ReportColumn.new(:col1, "Column 1"),
-        Tabloid::ReportColumn.new(:col2, "Column 2")
+        Tabloid::ReportColumn.new(:col2, "Column 2", :total => true)
     ]
   end
   let(:rows) { [[1, 2], [3, 4]] }
@@ -23,6 +23,20 @@ describe Tabloid::Data do
     it "puts rows into groups" do
       data = Tabloid::Data.new(:report_columns => columns, :rows => rows, :grouping_key => :col1)
       data.rows.first.should be_a(Tabloid::Group)
+    end
+
+    describe "summary" do
+      let(:data){ Tabloid::Data.new(:report_columns => columns, :rows => rows)}
+      it "adds a totals row to the csv output" do
+        csv_rows = FasterCSV.parse(data.to_csv)
+        csv_rows.should include(["Totals", nil])
+        csv_rows.should include([nil, "6"])
+      end
+      it "adds a totals row to the html output" do
+        doc = Nokogiri::HTML(data.to_html)
+        (doc/"tr.summary").should_not be_nil
+        (doc/"tr.summary td.col2").text.should == "6"
+      end
     end
   end
 end
