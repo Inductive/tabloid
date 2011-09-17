@@ -10,6 +10,7 @@ module Tabloid
       @report_columns   = options[:report_columns]
       @grouping_key     = options[:grouping_key]
       @grouping_options = options[:grouping_options] || {:total => true}
+      @summary_options  = options[:summary] || {}
 
       @rows = convert_rows(options[:rows])
 
@@ -59,7 +60,7 @@ module Tabloid
     end
 
     def summary_html
-      summary_rows.map{|row| row.to_html(:class => "summary")}.join
+      summary_rows.map { |row| row.to_html(:class => "summary") }.join
     end
 
     def summary_csv
@@ -67,26 +68,28 @@ module Tabloid
     end
 
     #perform the supplied block on all rows in the data structure
-    def summarize(key, &block)
-      summaries = rows.map { |r| r.summarize(key, &:+) }
-        if summaries.any?
-          summaries[1..-1].inject(summaries[0]) do |summary, val|
-            block.call(summary, val)
-          end
-        else
-          nil
+    def summarize(key, block)
+      summaries = rows.map { |r| r.summarize(key, &block) }
+      if summaries.any?
+        summaries[1..-1].inject(summaries[0]) do |summary, val|
+          block.call(summary, val)
         end
+      else
+        nil
+      end
     end
 
     def summary_rows
       data_summary = report_columns.map do |col|
-        summarize col.key, &:+ if col.total? && !col.hidden?
-      end
+        if summarizer = @summary_options[col.key]
+          summarize(col.key, self.send(summarizer)) unless col.hidden?
+        end
 
+      end
       [
           Tabloid::HeaderRow.new("Totals", :column_count => visible_column_count),
           Tabloid::Row.new(:columns => @report_columns,
-                           :data => data_summary)
+                           :data    => data_summary)
 
       ]
 
@@ -94,6 +97,10 @@ module Tabloid
 
     def visible_column_count
       @visible_col_count ||= @report_columns.select { |col| !col.hidden? }.count
+    end
+
+    def sum
+      proc(&:+)
     end
   end
 end

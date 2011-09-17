@@ -23,6 +23,10 @@ module Tabloid::Report
       @report_parameters
     end
 
+    def summary(summary_options = {})
+      @summary_options = summary_options
+    end
+
     def report_columns
       @report_columns
     end
@@ -45,8 +49,8 @@ module Tabloid::Report
       @rows_block = block
     end
 
-    def element(*args, &block)
-      @report_columns << Tabloid::ReportColumn.new(args[0], args[1], args[2])
+    def element(key, label = "", options={})
+       @report_columns << Tabloid::ReportColumn.new(key, label, options)
     end
 
     def grouping(key, options = {})
@@ -60,6 +64,10 @@ module Tabloid::Report
 
     def grouping_options
       @grouping_options
+    end
+
+    def summary_options
+      @summary_options
     end
   end
 
@@ -151,8 +159,15 @@ module Tabloid::Report
     end
 
     def build_and_cache_data
+
       @data ||= begin
-        report_data = Tabloid::Data.new(:report_columns => self.report_columns, :rows => prepare_data, :grouping_key => grouping_key, :grouping_options => grouping_options)
+        report_data = Tabloid::Data.new(
+            :report_columns => self.report_columns,
+            :rows => prepare_data,
+            :grouping_key => grouping_key,
+            :grouping_options => grouping_options,
+            :summary => summary_options
+        )
         cache_data(report_data)
         report_data
       end
@@ -181,6 +196,10 @@ module Tabloid::Report
 
     def grouping_key
       self.class.grouping_key
+    end
+
+    def summary_options
+      self.class.summary_options
     end
   end
 end

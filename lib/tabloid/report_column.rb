@@ -4,12 +4,11 @@ module Tabloid
     attr_accessor :label
     attr_accessor :hidden
 
-    def initialize(*args)
-      self.key = args.shift
-      self.label = args.shift
-      options = args.pop
-      @hidden = true if options && options[:hidden]
-      @total = options[:total] if options
+    def initialize(key, label = "", options={})
+      self.key = key
+      self.label = label
+      @hidden =  options[:hidden]
+      @total = options[:total]
     end
 
     def to_s

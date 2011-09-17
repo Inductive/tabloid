@@ -4,7 +4,7 @@ describe Tabloid::Data do
   let(:columns) do
     [
         Tabloid::ReportColumn.new(:col1, "Column 1"),
-        Tabloid::ReportColumn.new(:col2, "Column 2", :total => true)
+        Tabloid::ReportColumn.new(:col2, "Column 2")
     ]
   end
   let(:rows) { [[1, 2], [3, 4]] }
@@ -26,7 +26,7 @@ describe Tabloid::Data do
     end
 
     describe "summary" do
-      let(:data){ Tabloid::Data.new(:report_columns => columns, :rows => rows)}
+      let(:data){ Tabloid::Data.new(:report_columns => columns, :rows => rows, :summary => { :col2 => :sum } )}
       it "adds a totals row to the csv output" do
         csv_rows = FasterCSV.parse(data.to_csv)
         csv_rows.should include(["Totals", nil])
