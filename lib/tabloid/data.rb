@@ -36,7 +36,7 @@ module Tabloid
         rows = {:default => rows}
       end
 
-      rows.keys.map do |key|
+      rows.keys.sort.map do |key|
         data_rows = rows[key]
 
         label = (key == :default ? false : key)

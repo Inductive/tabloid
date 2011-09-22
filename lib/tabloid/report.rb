@@ -50,7 +50,7 @@ module Tabloid::Report
     end
 
     def element(key, label = "", options={})
-       @report_columns << Tabloid::ReportColumn.new(key, label, options)
+      @report_columns << Tabloid::ReportColumn.new(key, label, options)
     end
 
     def grouping(key, options = {})
@@ -126,7 +126,7 @@ module Tabloid::Report
 
     private
     def cache_data(data)
-      if Tabloid.cache_engine == :memcached
+      if Tabloid.cache_enabled?
         raise Tabloid::MissingParameterError.new("Must supply a cache_key block when caching is enabled") unless self.class.cache_key_block
 
         report_data = {
@@ -154,7 +154,16 @@ module Tabloid::Report
 
     def cache_client
       if Tabloid.cache_enabled?
-        @cache_client ||= Dalli::Client.new("#{Tabloid.cache_connection_options['server'] || 'localhost'}:#{Tabloid.cache_connection_options['port']||'11211'}")
+        server = Tabloid.cache_connection_options[:server] || 'localhost'
+        if Tabloid.cache_engine == :memcached
+          port          = Tabloid.cache_connection_options[:port] || '11211'
+          @cache_client ||= Dalli::Client.new("#{server}:#{port}")
+        elsif Tabloid.cache_engine == :redis
+          port          = Tabloid.cache_connection_options[:port] || '6379'
+          @cache_client ||= Redis.new(
+              :host => server,
+              :port => port)
+        end
       end
     end
 
@@ -162,11 +171,11 @@ module Tabloid::Report
 
       @data ||= begin
         report_data = Tabloid::Data.new(
-            :report_columns => self.report_columns,
-            :rows => prepare_data,
-            :grouping_key => grouping_key,
+            :report_columns   => self.report_columns,
+            :rows             => prepare_data,
+            :grouping_key     => grouping_key,
             :grouping_options => grouping_options,
-            :summary => summary_options
+            :summary          => summary_options
         )
         cache_data(report_data)
         report_data
