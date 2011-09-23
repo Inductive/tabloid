@@ -9,6 +9,9 @@ describe Tabloid::Report do
             [3, 4]
         ]
       include Tabloid::Report
+
+      parameter :param1, "TestParameter"
+
       element :col1, 'Col1'
       element :col2, 'Col2'
 
@@ -21,6 +24,7 @@ describe Tabloid::Report do
 
     before do
       @report = CsvReport.new
+      @report.prepare(:param1 => "foobar")
     end
 
     context "with memcached caching" do
@@ -75,6 +79,12 @@ describe Tabloid::Report do
       it "creates a table" do
         (doc/"table").count.should == 1
       end
+
+      it "includes parameter information" do
+        debugger
+        (doc/".parameter_label").text.should include("TestParameter")
+        (doc/".parameter_value").text.should include("foobar")
+      end
     end
   end
 
@@ -98,8 +108,6 @@ describe Tabloid::Report do
     end
 
   end
-
-
 
   describe "grouping" do
     class GroupingTest

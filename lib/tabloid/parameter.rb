@@ -8,8 +8,7 @@ module Tabloid
 
     private
     def humanize(string)
-      string.gsub!("_", " ")
-      "#{string.first.upcase}#{string[1,-1]}"
+      "#{string.first.upcase}#{string[1..-1]}".gsub("_", " ")
     end
 
   end

@@ -96,7 +96,8 @@ module Tabloid::Report
     end
 
     def parameter(key)
-      @report_parameters[key]
+      load_from_cache if Tabloid.cache_enabled?
+      @report_parameters[key] if @report_parameters
     end
 
     def data
@@ -141,12 +142,12 @@ module Tabloid::Report
     end
 
     def load_from_cache
-      if Tabloid.cache_enabled?
-        cached_data = read_from_cache
-        if cached_data
-          cached_data        = YAML.load(cached_data)
-          @data              = cached_data[:data]
-          @report_parameters = cached_data[:parameters]
+      if Tabloid.cache_enabled? && !@cached_data
+        @cached_data = read_from_cache
+        if @cached_data
+          @cached_data        = YAML.load(@cached_data)
+          @data              = @cached_data[:data]
+          @report_parameters = @cached_data[:parameters]
         end
       end
     end
@@ -209,6 +210,19 @@ module Tabloid::Report
 
     def summary_options
       self.class.summary_options
+    end
+
+    def parameter_info_html
+      html = Builder::XmlMarkup.new
+      html = html.p("id" => "parameters") do |p|
+        parameters.each do |param|
+          p.div do |div|
+            div.span(param.label, "class" => "parameter_label")
+            div.span(parameter(param.key), "class" => "parameter_value")
+          end
+        end
+      end
+      html.to_s
     end
   end
 end
