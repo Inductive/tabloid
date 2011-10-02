@@ -197,7 +197,7 @@ module Tabloid::Report
     end
 
     def read_from_cache
-      cache_client.get(cache_key) if cache_client
+      cache_client.get(cache_key) if cache_client && cache_key
     end
 
     def grouping_options

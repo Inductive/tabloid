@@ -43,16 +43,14 @@ describe Tabloid::Report do
 
       describe "#data" do
         it "should cache after collecting the data" do
-          #Dalli::Client.any_instance.stub(:get).and_return(nil)
-          #Dalli::Client.any_instance.should_receive(:set).with('report', anything).and_return(true)
+          Dalli::Client.any_instance.stub(:get).and_return(nil)
+          Dalli::Client.any_instance.should_receive(:set).with('report', anything).and_return(true)
           @report.data
         end
 
-        it "should cache the report parameters along with the data"
-
         it "should return the cached data if it exists" do
-          #Dalli::Client.any_instance.stub(:get).with('report').and_return(YAML.dump(@report.data))
-          #Dalli::Client.any_instance.stub(:set).and_return(true)
+          Dalli::Client.any_instance.stub(:get).with('report').and_return(YAML.dump(@report.data))
+          Dalli::Client.any_instance.stub(:set).and_return(true)
 
           @report.data.rows.should_not be_nil
         end
@@ -81,7 +79,7 @@ describe Tabloid::Report do
       end
 
       it "includes parameter information" do
-        debugger
+        pending("Need to put parameter block in the report")
         (doc/".parameter_label").text.should include("TestParameter")
         (doc/".parameter_value").text.should include("foobar")
       end
@@ -137,7 +135,7 @@ describe Tabloid::Report do
 
       include Tabloid::Report
       parameter :test_param
-      store_parameters :parameter_stash
+      cache_key {"key"}
 
       element :col1, "Column 1"
       rows do
@@ -147,12 +145,6 @@ describe Tabloid::Report do
 
     it "requires a parameter in the initializer" do
       expect{ ParameterTestReport.new.prepare}.should raise_error(Tabloid::MissingParameterError, "Must supply :test_param when creating the report")
-    end
-
-    it "serializes the parameters when #store_parameters is used" do
-      report = ParameterTestReport.new
-      report.prepare(:test_param => "test")
-      report.parameter_stash[:test_param].should == "test"
     end
 
     it "makes the parameter available in the report" do
