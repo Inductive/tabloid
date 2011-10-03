@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
   s.name        = "tabloid"
   s.version     = Tabloid::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Keith Gaddis"]
+  s.email       = ["keith.gaddis@gmail.com"]
+  s.homepage    = "http://github.com/inductive/tabloid"
+  s.summary     = %q{ Tabloid allows the creation of cacheable report data using a straightforward DSL and output to HTML, CSV, and more to come.}
+  s.description = %q{ Tabloid allows the creation of cacheable report data using a straightforward DSL and output to HTML, CSV, and more to come.}
 
   s.rubyforge_project = "tabloid"
 
@@ -18,4 +18,9 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "nokogiri"
+  s.add_development_dependency "dalli"
+  s.add_runtime_dependency "fastercsv"
+  s.add_runtime_dependency "builder"
 end
