@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Keith Gaddis"]
   s.email       = ["keith.gaddis@gmail.com"]
-  s.homepage    = "http://github.com/inductive/tabloid"
+  s.homepage    = "http://github.com/Inductive/tabloid"
   s.summary     = %q{ Tabloid allows the creation of cacheable report data using a straightforward DSL and output to HTML, CSV, and more to come.}
   s.description = %q{ Tabloid allows the creation of cacheable report data using a straightforward DSL and output to HTML, CSV, and more to come.}
 
