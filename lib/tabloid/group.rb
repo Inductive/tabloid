@@ -7,14 +7,14 @@ class Tabloid::Group
   def initialize(options)
     @rows                 = options[:rows]
     @columns              = options[:columns]
-    @visible_column_count = @columns.select { |col| !col.hidden? }.count
+    @visible_column_count = @columns.count { |col| !col.hidden? }
     @total_required       = options[:total]
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
 
   def total_required?
-    !(@total_required.nil? || @total_required == false)
+    !!@total_required
   end
 
   def rows
@@ -42,7 +42,7 @@ class Tabloid::Group
   def sum_rows(key)
     #use the initial value from the same set of addends to prevent type conflict
     #like 0:Fixnum + 0:Money => Exception
-    return nil unless @rows && @rows.any?
+    return unless @rows && @rows.any?
     @rows[1..-1].inject(@rows[0][key]) { |sum, row| sum + row[key] }
   end
 

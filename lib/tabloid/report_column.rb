@@ -25,7 +25,7 @@ module Tabloid
 
     def to_header
       return self.label if label
-      return self.key
+      self.key
     end
   end
 end

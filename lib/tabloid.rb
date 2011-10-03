@@ -2,8 +2,8 @@ require "builder"
 require 'yaml'
 
 module Tabloid
-  # Your code goes here...
 end
+
 require 'tabloid/configuration'
 require 'tabloid/header_row'
 require 'tabloid/missing_parameter_error'

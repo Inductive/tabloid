@@ -96,7 +96,7 @@ module Tabloid
     end
 
     def visible_column_count
-      @visible_col_count ||= @report_columns.select { |col| !col.hidden? }.count
+      @visible_col_count ||= @report_columns.count { |col| !col.hidden? }
     end
 
     def sum
