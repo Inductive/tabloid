@@ -37,6 +37,21 @@ describe Tabloid::Data do
         (doc/"tr.summary").should_not be_nil
         (doc/"tr.summary td.col2").text.should == "6"
       end
+
+      context "[empty rows]" do
+        before do
+          data = Tabloid::Data.new(:report_columns => columns, :rows => [], :summary => { :col2 => :sum } )
+          @csv_rows = FasterCSV.parse(data.to_csv)
+        end
+
+        it "should add blank total value in csv output" do
+          @csv_rows.should include(["Totals", nil])
+        end
+
+        it "should create add empty summary row in csv output" do
+          @csv_rows.last.should == [nil, nil]
+        end
+      end
     end
   end
 end
