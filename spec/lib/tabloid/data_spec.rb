@@ -38,7 +38,7 @@ describe Tabloid::Data do
         (doc/"tr.summary td.col2").text.should == "6"
       end
 
-      context "[empty rows]" do
+      context "[empty report]" do
         before do
           data = Tabloid::Data.new(:report_columns => columns, :rows => [], :summary => { :col2 => :sum } )
           @csv_rows = FasterCSV.parse(data.to_csv)
