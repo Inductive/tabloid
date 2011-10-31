@@ -29,19 +29,23 @@ module Tabloid
       rows.map! do |row|
         Tabloid::Row.new(:columns => @report_columns, :data => row)
       end
+      row_groups = groups_for rows
 
+      row_groups.keys.sort.map do |key|
+        Tabloid::Group.new :columns => @report_columns, :rows => row_groups[key], :label => label_for(key), :total => @grouping_options[:total]
+      end
+    end
+
+    def groups_for(rows)
       if @grouping_key
-        rows = rows.group_by { |r| r[@grouping_key] }
+        rows.group_by { |r| r[@grouping_key] }
       else
-        rows = {:default => rows}
+        rows.empty? ? {} : { :default => rows }
       end
+    end
 
-      rows.keys.sort.map do |key|
-        data_rows = rows[key]
-
-        label = (key == :default ? false : key)
-        Tabloid::Group.new :columns => @report_columns, :rows => data_rows, :label => label, :total => @grouping_options[:total]
-      end
+    def label_for(key)
+      key == :default ? false : key
     end
 
     def header_csv
