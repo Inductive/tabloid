@@ -44,12 +44,6 @@ module Tabloid
       end
     end
 
-    def groups_for(rows)
-      return rows.group_by { |r| r[@grouping_key] } if @grouping_key
-      rows.empty? ? {} : { :default => rows }
-    end
-
-
     def label_for(key)
       key == :default ? false : key
     end
