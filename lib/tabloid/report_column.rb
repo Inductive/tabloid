@@ -9,6 +9,7 @@ module Tabloid
       self.label = label
       @hidden =  options[:hidden]
       @total = options[:total]
+      @formatter = options[:formatter]
     end
 
     def to_s
@@ -23,9 +24,17 @@ module Tabloid
       hidden
     end
 
+    def formated?
+      @formatter && @formatter.class == Proc
+    end
+
     def to_header
       return self.label if label
       self.key
+    end
+
+    def format(val)
+      @formatter ? @formatter.call(val) : val
     end
   end
 end

@@ -52,6 +52,24 @@ describe Tabloid::Row do
       end
     end
   end
+
+  context "[formatting]" do
+    let(:columns) do
+      [Tabloid::ReportColumn.new(:col1, "Column 1"),
+       Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => lambda { |value| "Formatted value #{value}" })]
+    end
+
+    it "should apply custom format to values for csv output format" do
+      row = FasterCSV.parse(Tabloid::Row.new(:columns => columns, :data => [1, 2]).to_csv).first
+      row.last.should == "Formatted value 2"
+    end
+
+    it "should apply custom format to values for csv output format" do
+      doc = Nokogiri::HTML(Tabloid::Row.new(:columns => columns, :data => [1, 2]).to_html)
+      (doc / "td[class='col2']").first.children.last.text.should == "Formatted value 2"
+    end
+  end
+
   context "with object data" do
     let(:data){OpenStruct.new({:col1 => 1, :col2 => 2})}
     let(:row) { Tabloid::Row.new(:columns => columns, :data => data) }
