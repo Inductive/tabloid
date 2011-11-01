@@ -17,11 +17,11 @@ module Tabloid
     end
 
     def to_csv
-      header_csv + rows.map(&:to_csv).join + summary_csv
+      summary_present? ? csv_with_summary : csv_without_summary
     end
 
     def to_html
-      header_html + rows.map(&:to_html).join + summary_html
+      summary_present? ? html_with_summary : html_without_summary
     end
 
     private
@@ -46,6 +46,22 @@ module Tabloid
 
     def label_for(key)
       key == :default ? false : key
+    end
+
+    def csv_with_summary
+      csv_without_summary + summary_csv
+    end
+
+    def csv_without_summary
+      header_csv + rows.map(&:to_csv).join
+    end
+
+    def html_with_summary
+      html_without_summary + summary_html
+    end
+
+    def html_without_summary
+      header_html + rows.map(&:to_html).join
     end
 
     def header_csv
@@ -105,6 +121,10 @@ module Tabloid
 
     def sum
       proc(&:+)
+    end
+
+    def summary_present?
+      !@summary_options.empty?
     end
   end
 end

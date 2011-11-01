@@ -38,6 +38,20 @@ describe Tabloid::Data do
         (doc/"tr.summary td.col2").text.should == "6"
       end
 
+      context "[summary options is not presented]" do
+        let(:data) { Tabloid::Data.new(:report_columns => columns, :rows => rows ) }
+
+        it "should not add total row to the csv output" do
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.flatten.should_not include("Totals")
+        end
+
+        it "should not add total row to the html output" do
+          doc = Nokogiri::HTML(data.to_html)
+          (doc/"tr.summary").should be_empty
+        end
+      end
+
       context "[empty report]" do
         before do
           data = Tabloid::Data.new(:report_columns => columns, :rows => [], :summary => { :col2 => :sum } )
