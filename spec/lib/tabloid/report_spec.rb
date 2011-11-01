@@ -43,14 +43,19 @@ describe Tabloid::Report do
 
       describe "#data" do
         it "should cache after collecting the data" do
-          Dalli::Client.any_instance.stub(:get).and_return(nil)
-          Dalli::Client.any_instance.should_receive(:set).with('report', anything).and_return(true)
+          client_stub = Dalli::Client.new("localhost:11211")
+          client_stub.stub(:get).and_return(nil)
+          client_stub.should_receive(:set).with('report', anything).and_return(true)
+          Dalli::Client.stub(:new).and_return(client_stub)
+
           @report.data
         end
 
         it "should return the cached data if it exists" do
-          Dalli::Client.any_instance.stub(:get).with('report').and_return(YAML.dump(@report.data))
-          Dalli::Client.any_instance.stub(:set).and_return(true)
+          client_stub = Dalli::Client.new("localhost:11211")
+          client_stub.stub(:get).with('report').and_return(YAML.dump(@report.data))
+          client_stub.stub(:set).and_return(true)
+          Dalli::Client.stub(:new).and_return(client_stub)
 
           @report.data.rows.should_not be_nil
         end

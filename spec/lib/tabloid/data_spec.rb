@@ -34,7 +34,7 @@ describe Tabloid::Data do
       end
       it "adds a totals row to the html output" do
         doc = Nokogiri::HTML(data.to_html)
-        (doc/"tr.summary").should_not be_nil
+        (doc/"tr.summary").should_not be_empty
         (doc/"tr.summary td.col2").text.should == "6"
       end
 
