@@ -1,3 +1,5 @@
+require 'pdfkit'
+
 module Tabloid::Report
 
   def self.included(base)
@@ -112,6 +114,10 @@ module Tabloid::Report
 
     def to_csv
       data.to_csv
+    end
+
+    def to_pdf
+      PDFKit.new(self.to_html).to_pdf
     end
 
     def cache_key

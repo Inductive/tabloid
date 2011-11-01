@@ -89,6 +89,12 @@ describe Tabloid::Report do
         (doc/".parameter_value").text.should include("foobar")
       end
     end
+
+    describe "#to_pdf" do
+      it "should work" do
+        @report.to_pdf.should_not be_nil
+      end
+    end
   end
 
 

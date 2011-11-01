@@ -23,4 +23,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "dalli"
   s.add_runtime_dependency "fastercsv"
   s.add_runtime_dependency "builder"
+  s.add_runtime_dependency "pdfkit"
 end
