@@ -147,6 +147,10 @@ describe Tabloid::Report do
       expect{ ParameterTestReport.new.prepare}.should raise_error(Tabloid::MissingParameterError, "Must supply :test_param when creating the report")
     end
 
+    it "should allow 'false' value for parameters" do
+      expect{ ParameterTestReport.new.prepare(:test_param => false)}.should_not raise_error(Tabloid::MissingParameterError)
+    end
+
     it "makes the parameter available in the report" do
       report = ParameterTestReport.new.prepare(:test_param => "supercalifragilisticexpialidocious")
       report.to_html.should match(/supercalifragilisticexpialidocious/)

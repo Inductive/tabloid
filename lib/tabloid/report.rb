@@ -78,7 +78,7 @@ module Tabloid::Report
       @report_parameters = {}
       parameters.each do |param|
         value = options.delete param.key
-        raise Tabloid::MissingParameterError.new("Must supply :#{param.key} when creating the report") unless value
+        raise Tabloid::MissingParameterError.new("Must supply :#{param.key} when creating the report") if value.nil?
         @report_parameters[param.key] = value
       end
       data
