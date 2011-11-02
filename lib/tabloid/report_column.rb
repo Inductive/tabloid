@@ -3,6 +3,9 @@ module Tabloid
     attr_accessor :key
     attr_accessor :label
     attr_accessor :hidden
+    attr_accessor :formatter
+
+    class FormatterArityError < RuntimeError; end
 
     def initialize(key, label = "", options={})
       self.key = key
@@ -10,6 +13,10 @@ module Tabloid
       @hidden =  options[:hidden]
       @total = options[:total]
       @formatter = options[:formatter]
+
+      if @formatter && @formatter.arity != 1 && @formatter.arity != 2
+        raise FormatterArityError
+      end
     end
 
     def to_s
@@ -24,17 +31,13 @@ module Tabloid
       hidden
     end
 
-    def formated?
+    def with_format?
       @formatter && @formatter.class == Proc
     end
 
     def to_header
       return self.label if label
       self.key
-    end
-
-    def format(val)
-      @formatter ? @formatter.call(val) : val
     end
   end
 end

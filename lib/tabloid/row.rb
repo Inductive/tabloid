@@ -18,7 +18,7 @@ class Tabloid::Row
       csv_array = []
       @columns.each_with_index do |col, index|
         next if col.hidden?
-        csv_array << formatted_value(col)
+        csv_array << column_value(col)
       end
       csv << csv_array
     end
@@ -28,7 +28,7 @@ class Tabloid::Row
     html = Builder::XmlMarkup.new
     html.tr("class" => (options[:class] || "data")) do |tr|
       @columns.each_with_index do |col, index|
-        tr.td(formatted_value(col), "class" => col.key) unless col.hidden?
+        tr.td(column_value(col), "class" => col.key) unless col.hidden?
       end
     end
   end
@@ -53,9 +53,18 @@ class Tabloid::Row
     end
   end
 
-  def formatted_value(col)
-    col.formated? ? col.format(self[col.key]) : self[col.key]
+  def column_value(col)
+    if col.with_format?
+      value_with_format self[col.key], col.formatter
+    else
+      self[col.key]
+    end
   end
+
+  def value_with_format(value, formatter)
+    formatter.arity == 1 ? formatter.call(value) : formatter.call(value, @data.dup)
+  end
+
 
   def method_missing(method, *args)
     if @columns.detect{|col| col.key == method}
