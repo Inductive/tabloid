@@ -80,7 +80,10 @@ module Tabloid::Report
         <header>
         </header>
         <body>
-          %s
+          <h1>%s</h1>
+          <div id='report'>
+            %s
+          </div>
         </body>
       </html>
 EOS
@@ -127,7 +130,9 @@ EOS
     end
 
     def to_pdf
-      PDFKit.new(to_complete_html).to_pdf
+      kit = PDFKit.new(to_complete_html)
+      kit.stylesheets << File.expand_path("../../static/report.pdf.css", File.dirname(__FILE__))
+      kit.to_pdf
     end
 
     def cache_key
@@ -144,7 +149,7 @@ EOS
     private
 
     def to_complete_html
-      HTML_FRAME % self.to_html
+      HTML_FRAME % [self.name, self.to_html]
     end
 
     def cache_data(data)

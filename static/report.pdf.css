@@ -1,0 +1,20 @@
+#report table {
+  width: 100%
+
+  font-family: "Helvetica Neue",Helvetica, "Lucida Grande", Helvetica, sans-serif;
+  font-size: 11px;
+}
+
+#report table .group_header, #report table .summary
+{
+  text-align: left;
+  font-weight: bold;
+
+  font-family: "Helvetica Neue",Helvetica, "Lucida Grande", Helvetica, sans-serif;
+  font-size: 11px;
+}
+
+body {
+  font-family: "Helvetica Neue",Helvetica, "Lucida Grande", Helvetica, sans-serif;
+  font-size: 11px;
+}

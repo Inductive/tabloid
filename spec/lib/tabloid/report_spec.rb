@@ -20,6 +20,10 @@ describe Tabloid::Report do
       rows do
         CsvReport::DATA
       end
+
+      def name
+        "Report"
+      end
     end
 
     before do
