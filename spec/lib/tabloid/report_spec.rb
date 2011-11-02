@@ -93,6 +93,7 @@ describe Tabloid::Report do
     describe "#to_pdf" do
       it "should work" do
         @report.to_pdf.should_not be_nil
+        @report.to_pdf.should_not be_empty
       end
     end
   end

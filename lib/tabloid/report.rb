@@ -75,6 +75,16 @@ module Tabloid::Report
 
   module InstanceMethods
 
+    HTML_FRAME =<<-EOS
+      <html>
+        <header>
+        </header>
+        <body>
+          %s
+        </body>
+      </html>
+EOS
+
     def prepare(options={})
       before_prepare if self.respond_to?(:before_prepare)
       @report_parameters = {}
@@ -117,7 +127,7 @@ module Tabloid::Report
     end
 
     def to_pdf
-      PDFKit.new(self.to_html).to_pdf
+      PDFKit.new(to_complete_html).to_pdf
     end
 
     def cache_key
@@ -132,6 +142,11 @@ module Tabloid::Report
 
 
     private
+
+    def to_complete_html
+      HTML_FRAME % self.to_html
+    end
+
     def cache_data(data)
       if Tabloid.cache_enabled?
         raise Tabloid::MissingParameterError.new("Must supply a cache_key block when caching is enabled") unless self.class.cache_key_block
