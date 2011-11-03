@@ -5,7 +5,7 @@ module Tabloid
     attr_accessor :hidden
     attr_accessor :formatter
 
-    class FormatterArityError < RuntimeError; end
+    class FormatterError < RuntimeError; end
 
     def initialize(key, label = "", options={})
       self.key = key
@@ -13,9 +13,14 @@ module Tabloid
       @hidden =  options[:hidden]
       @total = options[:total]
       @formatter = options[:formatter]
+      @formatting_by = options[:formatting_by]
 
-      if @formatter && @formatter.arity != 1 && @formatter.arity != 2
-        raise FormatterArityError
+      unless @formatter.nil?
+        raise FormatterError, "formatter or formatting_by is not specified" unless @formatting_by
+        raise FormatterError, "formatter method doesn't supported by formatting_by" unless @formatting_by.respond_to?(@formatter)
+
+        method = @formatting_by.method(@formatter)
+        raise FormatterError, "Incorrect formatter arity: #{method.arity}" unless method.arity == 1 && method.arity == 2
       end
     end
 
@@ -32,12 +37,17 @@ module Tabloid
     end
 
     def with_format?
-      @formatter && @formatter.class == Proc
+      @formatter && @formatting_by
     end
 
     def to_header
       return self.label if label
       self.key
+    end
+
+    def format(value, row)
+      method = @formatting_by.method(@formatter)
+      method.arity == 1 ? method.call(value) : method.call(value, row)
     end
   end
 end

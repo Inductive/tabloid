@@ -9,7 +9,7 @@ module Tabloid
 
       @report_columns   = options[:report_columns]
       @grouping_key     = options[:grouping_key]
-      @grouping_options = options[:grouping_options] || {:total => true}
+      @grouping_options = options[:grouping_options] || {}
       @summary_options  = options[:summary] || {}
 
       @rows = convert_rows(options[:rows])

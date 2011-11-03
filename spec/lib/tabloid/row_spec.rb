@@ -54,10 +54,21 @@ describe Tabloid::Row do
   end
 
   context "[formatting]" do
+
+    class Formatter
+      def format_for_value(value)
+        "Formatted value #{value}"
+      end
+
+      def format_for_value_and_row(value, row)
+        "Value #{value}, Row #{row.join " "}"
+      end
+    end
+
     context "[one argument]" do
       let(:columns) do
         [Tabloid::ReportColumn.new(:col1, "Column 1"),
-         Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => lambda { |value| "Formatted value #{value}" })]
+         Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => :format_for_value, :formatting_by => Formatter.new)]
       end
 
       it "should apply custom format to values for csv output format" do
@@ -74,7 +85,7 @@ describe Tabloid::Row do
     context "[two arguments]" do
       let(:columns) do
         [Tabloid::ReportColumn.new(:col1, "Column 1"),
-         Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => lambda { |value, row| "Value #{value}, Row #{row.join " "}" })]
+         Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => :format_for_value_and_row, :formatting_by => Formatter.new)]
       end
 
       it "should can use row values for csv output format" do
@@ -82,23 +93,9 @@ describe Tabloid::Row do
         row.last.should == "Value 2, Row 1 2"
       end
 
-      it "should apply custom format to values for csv output format" do
+      it "should apply custom format to values for html output format" do
         doc = Nokogiri::HTML(Tabloid::Row.new(:columns => columns, :data => [1, 2]).to_html)
         (doc / "td[class='col2']").first.children.last.text.should == "Value 2, Row 1 2"
-      end
-    end
-
-    context "[invalid arguments count]" do
-      it "should raise exception when argument more then two" do
-        expect do
-          Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => lambda { |value, row, invalid_argument| "Value" })
-        end.should raise_error(Tabloid::ReportColumn::FormatterArityError)
-      end
-
-      it "should raise exception when there are no arguments" do
-        expect do
-          Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => lambda { "Value" })
-        end.should raise_error(Tabloid::ReportColumn::FormatterArityError)
       end
     end
   end

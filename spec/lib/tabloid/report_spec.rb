@@ -123,6 +123,40 @@ describe Tabloid::Report do
 
   end
 
+  context "[formatting]" do
+    context "with memcached caching" do
+      before do
+        #Tabloid.cache_engine = :memcached
+        Tabloid.cache_engine = :redis
+        @report = FormattingTestReport.new
+      end
+      after do
+        Tabloid.cache_engine = nil
+      end
+
+      class FormattingTestReport
+        include Tabloid::Report
+
+        class Formatter
+          def simple_format(value)
+            "Value is #{value}"
+          end
+        end
+
+        formatting_by Formatter.new
+        element :col1, "Column 1", :formatter => :simple_format
+        element :col2, "Column 2", :formatter => :simple_format, :formatting_by => Formatter.new
+        cache_key { "test-#{Time.now.to_i}" }
+        rows { [[1, 2]] }
+      end
+
+      it "adds a column to the report data" do
+        csv = FasterCSV.parse(@report.to_csv)
+        csv.to_a.should == [["Column 1", "Column 2"], ["Value is 1", "Value is 2"]]
+      end
+    end
+  end
+
   describe "grouping" do
     class GroupingTest
       include Tabloid::Report

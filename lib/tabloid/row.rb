@@ -55,14 +55,14 @@ class Tabloid::Row
 
   def column_value(col)
     if col.with_format?
-      value_with_format self[col.key], col.formatter
+      value_with_format self[col.key], col
     else
       self[col.key]
     end
   end
 
-  def value_with_format(value, formatter)
-    formatter.arity == 1 ? formatter.call(value) : formatter.call(value, @data.dup)
+  def value_with_format(value, col)
+    col.format value, @data.dup
   end
 
 

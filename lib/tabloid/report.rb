@@ -52,7 +52,13 @@ module Tabloid::Report
     end
 
     def element(key, label = "", options={})
-      @report_columns << Tabloid::ReportColumn.new(key, label, options)
+      updated_options = options.dup
+      updated_options.update(:formatting_by => @formatting_by) if options[:formatting_by].nil?
+      @report_columns << Tabloid::ReportColumn.new(key, label, updated_options)
+    end
+
+    def formatting_by(obj)
+      @formatting_by = obj
     end
 
     def grouping(key, options = {})
