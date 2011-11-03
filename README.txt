@@ -36,6 +36,7 @@ Simple report
   #output formats supported now
   csv = report.to_csv
   html = report.to_html
+  pdf = report.to_html
 
 
 Walking through the above:
@@ -58,6 +59,7 @@ makes this class into a Tabloid report.
 
 Bells and whistles
 Tabloid also supports groups with summaries and a report summary.  Only totals are supported at the moment, but more flexibility is coming soon.
+Tabloid also supports column formatters.
 
   class UnpaidInvoicesReport < ActiveRecord::Base
     include Tabloid::Report
@@ -72,7 +74,7 @@ Tabloid also supports groups with summaries and a report summary.  Only totals a
     grouping :customer_name, :total => true
 
     element :invoice_number, "Invoice Number"
-    element :invoice_date, "Invoice Date"
+    element :invoice_date, "Invoice Date", :formatter => lambda { |data| data.strftime "%d %m %Y" }
     element :customer_name, "Name", :hidden => true
     element :invoice_amount, "Amount", :total => true
     element :balance, "Balance"
