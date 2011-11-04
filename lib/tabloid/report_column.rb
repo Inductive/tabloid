@@ -20,7 +20,7 @@ module Tabloid
         raise FormatterError, "formatter method doesn't supported by formatting_by" unless @formatting_by.respond_to?(@formatter)
 
         method = @formatting_by.method(@formatter)
-        raise FormatterError, "Incorrect formatter arity: #{method.arity}" unless method.arity == 1 && method.arity == 2
+        raise FormatterError, "Incorrect formatter arity: #{method.arity}" unless method.arity == 1 || method.arity == 2
       end
     end
 

@@ -3,7 +3,7 @@ require "spec_helper"
 describe Tabloid::ReportColumn do
 
   class Formatter
-    def format_for_value(val)
+    def format_for_value(value)
       "Formatted value #{value}"
     end
 
@@ -36,6 +36,11 @@ describe Tabloid::ReportColumn do
       expect do
         Tabloid::ReportColumn.new(:col, "Column", :formatter => :format_with_incorrect_arity, :formatting_by => Formatter.new)
       end.should raise_error(Tabloid::ReportColumn::FormatterError, "Incorrect formatter arity: 0")
+    end
+
+    it "should use custom format" do
+      col = Tabloid::ReportColumn.new(:col, "Column", :formatter => :format_for_value, :formatting_by => Formatter.new)
+      col.format(1, []).should == "Formatted value 1"
     end
   end
 end
