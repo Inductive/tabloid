@@ -63,6 +63,10 @@ describe Tabloid::Row do
       def format_for_value_and_row(value, row)
         "Value #{value}, Row #{row.join " "}"
       end
+
+      def format_row_html(value)
+        "<p>#{value}</p>"
+      end
     end
 
     context "[one argument]" do
@@ -96,6 +100,18 @@ describe Tabloid::Row do
       it "should apply custom format to values for html output format" do
         doc = Nokogiri::HTML(Tabloid::Row.new(:columns => columns, :data => [1, 2]).to_html)
         (doc / "td[class='col2']").first.children.last.text.should == "Value 2, Row 1 2"
+      end
+    end
+
+    context "[html options]" do
+      let(:columns) do
+        [Tabloid::ReportColumn.new(:col1, "Column 1"),
+         Tabloid::ReportColumn.new(:col2, "Column 2", :formatter => :format_row_html, :formatting_by => Formatter.new, :html => {:row => true })]
+      end
+
+      it "should not escape row html" do
+        doc = Nokogiri::HTML(Tabloid::Row.new(:columns => columns, :data => [1, 2]).to_html)
+        (doc / "td[class='col2']").first.children.last.to_s.should == "<p>2</p>"
       end
     end
   end

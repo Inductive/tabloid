@@ -4,6 +4,7 @@ module Tabloid
     attr_accessor :label
     attr_accessor :hidden
     attr_accessor :formatter
+    attr_accessor :html
 
     class FormatterError < RuntimeError; end
 
@@ -14,6 +15,7 @@ module Tabloid
       @total = options[:total]
       @formatter = options[:formatter]
       @formatting_by = options[:formatting_by]
+      @html = options[:html] || {}
 
       unless @formatter.nil?
         raise FormatterError, "formatter or formatting_by is not specified" unless @formatting_by
