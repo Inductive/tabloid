@@ -68,5 +68,22 @@ describe Tabloid::Group do
         end
       end
     end
+    context "cardinality" do
+      describe "#rows" do
+        it "includes a cardinality row" do
+          columns     = [
+              Tabloid::ReportColumn.new(:col1, "Column 1"),
+              Tabloid::ReportColumn.new(:col2, "Column 2"),
+              Tabloid::ReportColumn.new(:col3, "Column 3")
+          ]
+          group = Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :cardinality => 'Foos')
+          cardinality_row = group.rows.last
+
+          cardinality_row[:col1].should == "Foos"
+          cardinality_row[:col2].should == 2
+          cardinality_row[:col3].should be_nil
+        end
+      end
+    end
   end
 end

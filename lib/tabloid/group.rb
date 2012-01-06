@@ -9,6 +9,8 @@ class Tabloid::Group
     @columns              = options[:columns]
     @visible_column_count = @columns.count { |col| !col.hidden? }
     @total_required       = options[:total]
+    @cardinality_required = !options[:cardinality].nil?
+    @cardinality_label    = options[:cardinality]
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
@@ -18,12 +20,20 @@ class Tabloid::Group
   end
 
   def rows
+    result = @rows.dup
+
     if total_required?
       summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
-      @rows + [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
-    else
-      @rows
+      result.push Tabloid::Row.new(:data => summed_data, :columns => self.columns)
     end
+
+    if @cardinality_required
+      cardinality_data = [(@cardinality_label || "Cardinality"), @rows.size]
+      (@visible_column_count.size - 2).times { cardinality_data.push nil }
+      result.push Tabloid::Row.new(:data => cardinality_data, :columns => self.columns)
+    end
+
+    result
   end
 
   def summarize(key, &block)
