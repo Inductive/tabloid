@@ -8,15 +8,11 @@ class Tabloid::Group
     @rows                 = options[:rows]
     @columns              = options[:columns]
     @visible_column_count = @columns.count { |col| !col.hidden? }
-    @total_required       = options[:total]
-    @cardinality_required = !options[:cardinality].nil?
+    @total_required       = !!options[:total]
+    @cardinality_required = !!options[:cardinality]
     @cardinality_label    = options[:cardinality] || "Cardinality"
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
-  end
-
-  def total_required?
-    !!@total_required
   end
 
   def rows
@@ -44,7 +40,7 @@ class Tabloid::Group
   end
 
   def total_rows
-    return [] unless total_required?
+    return [] unless @total_required
 
     summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
     [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
