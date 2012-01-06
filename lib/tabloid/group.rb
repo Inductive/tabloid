@@ -10,7 +10,7 @@ class Tabloid::Group
     @visible_column_count = @columns.count { |col| !col.hidden? }
     @total_required       = options[:total]
     @cardinality_required = !options[:cardinality].nil?
-    @cardinality_label    = options[:cardinality]
+    @cardinality_label    = options[:cardinality] || "Cardinality"
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
@@ -20,20 +20,7 @@ class Tabloid::Group
   end
 
   def rows
-    result = @rows.dup
-
-    if total_required?
-      summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
-      result.push Tabloid::Row.new(:data => summed_data, :columns => self.columns)
-    end
-
-    if @cardinality_required
-      cardinality_data = [(@cardinality_label || "Cardinality"), @rows.size]
-      (@visible_column_count.size - 2).times { cardinality_data.push nil }
-      result.push Tabloid::Row.new(:data => cardinality_data, :columns => self.columns)
-    end
-
-    result
+    @rows.dup + total_rows + cardinality_rows
   end
 
   def summarize(key, &block)
@@ -54,6 +41,23 @@ class Tabloid::Group
     #like 0:Fixnum + 0:Money => Exception
     return unless @rows && @rows.any?
     @rows[1..-1].inject(@rows[0][key]) { |sum, row| sum + row[key] }
+  end
+
+  def total_rows
+    return [] unless total_required?
+
+    summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
+    [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
+  end
+
+  def cardinality_rows
+    [].tap do |result|
+      if @cardinality_required
+        empty_cells = (@visible_column_count.size - 2).times.map { nil }
+        cardinality_data = [@cardinality_label, @rows.size, *empty_cells]
+        result.push Tabloid::Row.new(:data => cardinality_data, :columns => self.columns)
+      end
+    end
   end
 
   def header_row_csv
