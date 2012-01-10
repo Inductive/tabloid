@@ -73,14 +73,19 @@ describe Tabloid::Group do
       let(:row1) { Tabloid::Row.new(:columns => columns, :data => [1, 2]) }
       let(:row2) { Tabloid::Row.new(:columns => columns, :data => [3, 4]) }
       it "adds cardinality info to a group label" do
-        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :label => "foobar", :cardinality => 'foos')
+        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :label => "foobar", :cardinality => 'foo')
         rows = FasterCSV.parse(group.to_csv)
         rows.first.should == ["foobar (2 foos)", nil]
       end
       it "shows cardinality even if a group label isn't provided'" do
-        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :cardinality => 'foos')
+        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :cardinality => 'foo')
         rows = FasterCSV.parse(group.to_csv)
         rows.first.should == ["2 foos", nil]
+      end
+      it "takes into account grammatical number" do
+        group = Tabloid::Group.new(:rows => [row1], :columns => columns, :cardinality => 'foo')
+        rows = FasterCSV.parse(group.to_csv)
+        rows.first.should == ["1 foo", nil]
       end
     end
   end

@@ -77,6 +77,12 @@ class Tabloid::Group
   end
 
   def cardinality_content
-    [@rows.size, @cardinality_label].join ' '
+    label = if @rows.size > 1 && @cardinality_label
+              "#{@cardinality_label}s"
+            else
+              @cardinality_label
+            end
+
+    [@rows.size, label].join ' '
   end
 end
