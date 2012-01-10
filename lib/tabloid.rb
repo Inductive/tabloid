@@ -13,6 +13,7 @@ require 'tabloid/report'
 require 'tabloid/column_extensions'
 require 'tabloid/report_column'
 require 'tabloid/row'
+require 'tabloid/cardinality_row'
 require 'tabloid/group'
 require 'tabloid/data'
 

@@ -51,7 +51,7 @@ class Tabloid::Group
       if @cardinality_required
         empty_cells = (@visible_column_count.size - 2).times.map { nil }
         cardinality_data = [@cardinality_label, @rows.size, *empty_cells]
-        result.push Tabloid::Row.new(:data => cardinality_data, :columns => self.columns)
+        result.push Tabloid::CardinalityRow.new(:data => cardinality_data, :columns => self.columns)
       end
     end
   end

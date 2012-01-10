@@ -83,6 +83,7 @@ describe Tabloid::Group do
           cardinality_row[:col2].should == 2
           cardinality_row[:col3].should be_nil
         end
+        it "uses a default cardinality label"
       end
     end
   end
