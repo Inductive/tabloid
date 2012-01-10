@@ -32,7 +32,11 @@ module Tabloid
       row_groups = groups_for rows
 
       row_groups.keys.sort.map do |key|
-        Tabloid::Group.new :columns => @report_columns, :rows => row_groups[key], :label => label_for(key), :total => @grouping_options[:total]
+        Tabloid::Group.new :columns => @report_columns,
+                           :rows => row_groups[key],
+                           :label => label_for(key),
+                           :total => @grouping_options[:total],
+                           :cardinality => @grouping_options[:cardinality]
       end
     end
 
