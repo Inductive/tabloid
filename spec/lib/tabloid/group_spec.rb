@@ -69,21 +69,18 @@ describe Tabloid::Group do
       end
     end
     context "cardinality" do
-      describe "#rows" do
-        it "includes a cardinality row" do
-          columns     = [
-              Tabloid::ReportColumn.new(:col1, "Column 1"),
-              Tabloid::ReportColumn.new(:col2, "Column 2"),
-              Tabloid::ReportColumn.new(:col3, "Column 3")
-          ]
-          group = Tabloid::Group.new(:rows =>[row1, row2], :columns => columns, :cardinality => 'Foos')
-          cardinality_row = group.rows.last
-
-          cardinality_row[:col1].should == "Foos"
-          cardinality_row[:col2].should == 2
-          cardinality_row[:col3].should be_nil
-        end
-        it "uses a default cardinality label"
+      let(:columns) { [Tabloid::ReportColumn.new(:col1, "Column 1"), Tabloid::ReportColumn.new(:col2, "Column 2")] }
+      let(:row1) { Tabloid::Row.new(:columns => columns, :data => [1, 2]) }
+      let(:row2) { Tabloid::Row.new(:columns => columns, :data => [3, 4]) }
+      it "adds cardinality info to a group label" do
+        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :label => "foobar", :cardinality => 'foos')
+        rows = FasterCSV.parse(group.to_csv)
+        rows.first.should == ["foobar (2 foos)", nil]
+      end
+      it "shows cardinality even if a group label isn't provided'" do
+        group = Tabloid::Group.new(:rows => [row1, row2], :columns => columns, :cardinality => 'foos')
+        rows = FasterCSV.parse(group.to_csv)
+        rows.first.should == ["2 foos", nil]
       end
     end
   end

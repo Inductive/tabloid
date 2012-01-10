@@ -10,13 +10,13 @@ class Tabloid::Group
     @visible_column_count = @columns.count { |col| !col.hidden? }
     @total_required       = !!options[:total]
     @cardinality_required = !!options[:cardinality]
-    @cardinality_label    = options[:cardinality] || "Cardinality"
+    @cardinality_label    = options[:cardinality]
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
 
   def rows
-    @rows.dup + total_rows + cardinality_rows
+    @rows.dup + total_rows
   end
 
   def summarize(key, &block)
@@ -46,34 +46,37 @@ class Tabloid::Group
     [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
   end
 
-  def cardinality_rows
-    [].tap do |result|
-      if @cardinality_required
-        empty_cells = (@visible_column_count.size - 2).times.map { nil }
-        cardinality_data = [@cardinality_label, @rows.size, *empty_cells]
-        result.push Tabloid::CardinalityRow.new(:data => cardinality_data, :columns => self.columns)
-      end
-    end
-  end
-
   def header_row_csv
-    if @label
-      cols = [label]
-      (@visible_column_count-1).times{ cols << nil}
-      FasterCSV.generate{|csv| csv<<cols}
-    else
-      ""
-    end
+    return '' unless header_present?
+
+    cols = [header_content]
+    (@visible_column_count-1).times{ cols << nil}
+    FasterCSV.generate{|csv| csv<<cols}
   end
 
   def header_row_html
-    if @label
-      html = Builder::XmlMarkup.new
-      html.tr(:class => "group_header") do |tr|
-        tr.td(label, {"colspan" => @visible_column_count})
-      end
-    else
-      ""
+    return '' unless header_present?
+
+    html = Builder::XmlMarkup.new
+    html.tr(:class => "group_header") do |tr|
+      tr.td(header_content, {"colspan" => @visible_column_count})
     end
+  end
+
+  def header_present?
+    @label || @cardinality_required
+  end
+
+  def header_content
+    case [!!@label, !!@cardinality_required]
+      when [true, true] then "#{@label} (#{cardinality_content})"
+      when [true, false] then @label
+      when [false, true] then cardinality_content
+      else ''
+    end
+  end
+
+  def cardinality_content
+    [@rows.size, @cardinality_label].join ' '
   end
 end
