@@ -73,8 +73,20 @@ describe Tabloid::Data do
                             :grouping_options => { :cardinality => 'foo' })
         end
         it "adds cardinality to the total label of the csv output" do
+          data = Tabloid::Data.new(:report_columns => columns,
+                                   :rows => rows,
+                                   :grouping_key => :col1,
+                                   :grouping_options => { :cardinality => 'foo' })
           csv_rows = FasterCSV.parse(data.to_csv)
           csv_rows.should include(["Totals (2 foos)", nil])
+        end
+        it "takes into account grammatical number" do
+          data = Tabloid::Data.new(:report_columns => columns,
+                                   :rows => [[1, 2]],
+                                   :grouping_key => :col1,
+                                   :grouping_options => { :cardinality => 'foo' })
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.should include(["Totals (1 foo)", nil])
         end
       end
       context "[empty report]" do

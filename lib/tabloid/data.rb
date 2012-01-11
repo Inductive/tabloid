@@ -119,8 +119,8 @@ module Tabloid
       return nil unless cardinality_present?
 
       cardinality = rows.map(&:cardinality).inject(&:+) || 0
-      units = cardinality > 1 ? "#{@grouping_options[:cardinality]}s" :
-                                @cardinality_label
+      units = @grouping_options[:cardinality]
+      units << 's' if cardinality > 1
 
       "(#{cardinality} #{units})"
     end
