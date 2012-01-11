@@ -58,7 +58,7 @@ makes this class into a Tabloid report.
 #to_csv and #to_html do pretty much what you'd think; they return a string containing the report in the respective formats.  The HTML returned by #to_html is a table with one column per visible column; each cell will have the element symbol as a class name to allow for styling of columns.
 
 Bells and whistles
-Tabloid also supports groups with summaries and a report summary.  Only totals are supported at the moment, but more flexibility is coming soon.
+Tabloid also supports groups with summaries and a report summary.  Only totals and cardinality are supported at the moment, but more flexibility is coming soon.
 Tabloid also supports column formatters.
 
   class UnpaidInvoicesReport < ActiveRecord::Base
@@ -71,7 +71,7 @@ Tabloid also supports column formatters.
     parameter :start_date
     parameter :end_date
 
-    grouping :customer_name, :total => true
+    grouping :customer_name, :total => true, :cardinality => 'invoice'
 
     element :invoice_number, "Invoice Number"
     element :invoice_date, "Invoice Date", :formatter => lambda { |data| data.strftime "%d %m %Y" }
@@ -86,7 +86,7 @@ Tabloid also supports column formatters.
     end
   end
 
-There's several things different about this one.  We use #grouping to tell Tabloid to group the data by customer name, and indicate that we want totals to be calculated for each group.  We indicate which columns we want totalled by passing :total => true on the elements requiring totals.  We tell Tabloid to hide the :customer_name column because it will show a group header that contains this element for us.  Finally, we tell Tabloid to summarize the report by summing balances. (:sum is the only accepted value for now, but support is coming for arbitrary blocks and a wider range of built-in functions).
+There's several things different about this one.  We use #grouping to tell Tabloid to group the data by customer name, and indicate that we want totals to be calculated for each group.  We indicate which columns we want totalled by passing :total => true on the elements requiring totals.  We tell Tabloid to hide the :customer_name column because it will show a group header that contains this element for us.  Finally, we tell Tabloid to summarize the report by summing balances. (:sum is the only accepted value for now, but support is coming for arbitrary blocks and a wider range of built-in functions). We tell Tabloid to add cardinality info (in the example above it might be "42 invoices") for each group and to a report summary.
 
 Background support
 Notice the parent class on this one? This report is backed by ActiveRecord. The main reason you'd want to do that is to allow for generation of report data in the background.  In the report above, we've enabled that by making #prepare (which invokes the #rows block) run in the background using DelayedJob's #handle_asynchronously method.  To use it under these circumstances, you'll create and save the report, then call prepare explicitly:
