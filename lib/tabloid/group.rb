@@ -19,6 +19,10 @@ class Tabloid::Group
     @rows.dup + total_rows
   end
 
+  def cardinality
+    @rows.size
+  end
+
   def summarize(key, &block)
     @rows[1..-1].inject(@rows[0].send(key)){|summary, row| block.call(summary, row.send(key))  }
   end

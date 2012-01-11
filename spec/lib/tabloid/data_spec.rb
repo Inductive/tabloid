@@ -26,18 +26,19 @@ describe Tabloid::Data do
     end
 
     describe "summary" do
-      let(:data){ Tabloid::Data.new(:report_columns => columns, :rows => rows, :summary => { :col2 => :sum } )}
-      it "adds a totals row to the csv output" do
-        csv_rows = FasterCSV.parse(data.to_csv)
-        csv_rows.should include(["Totals", nil])
-        csv_rows.should include([nil, "6"])
+      context "[summary options is presented]" do
+        let(:data){ Tabloid::Data.new(:report_columns => columns, :rows => rows, :summary => { :col2 => :sum } )}
+        it "adds a totals row to the csv output" do
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.should include(["Totals", nil])
+          csv_rows.should include([nil, "6"])
+        end
+        it "adds a totals row to the html output" do
+          doc = Nokogiri::HTML(data.to_html)
+          (doc/"tr.summary").should_not be_empty
+          (doc/"tr.summary td.col2").text.should == "6"
+        end
       end
-      it "adds a totals row to the html output" do
-        doc = Nokogiri::HTML(data.to_html)
-        (doc/"tr.summary").should_not be_empty
-        (doc/"tr.summary td.col2").text.should == "6"
-      end
-
       context "[summary options is not presented]" do
         let(:data) { Tabloid::Data.new(:report_columns => columns, :rows => rows ) }
 
@@ -51,7 +52,31 @@ describe Tabloid::Data do
           (doc/"tr.summary").should be_empty
         end
       end
-
+      context "[summary and cardinality options is presented]" do
+        let(:data) do
+          Tabloid::Data.new(:report_columns => columns,
+                            :rows => rows,
+                            :summary => { :col2 => :sum },
+                            :grouping_key => :col1,
+                            :grouping_options => { :cardinality => 'foo' })
+        end
+        it "adds a totals row with cardinality info to the csv output" do
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.should include(["Totals (2 foos)", nil])
+        end
+      end
+      context "[cardinality options is presented]" do
+        let(:data) do
+          Tabloid::Data.new(:report_columns => columns,
+                            :rows => rows,
+                            :grouping_key => :col1,
+                            :grouping_options => { :cardinality => 'foo' })
+        end
+        it "adds cardinality to the total label of the csv output" do
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.should include(["Totals (2 foos)", nil])
+        end
+      end
       context "[empty report]" do
         before do
           data = Tabloid::Data.new(:report_columns => columns, :rows => [], :summary => { :col2 => :sum } )

@@ -68,6 +68,13 @@ describe Tabloid::Group do
         end
       end
     end
+    describe "#cardinality" do
+      it "counts rows" do
+        Tabloid::Group.new(:rows => [], :columns => columns).cardinality.should == 0
+        Tabloid::Group.new(:rows => [row1], :columns => columns).cardinality.should == 1
+        Tabloid::Group.new(:rows => [row1, row2], :columns => columns).cardinality.should == 2
+      end
+    end
     context "cardinality" do
       let(:columns) { [Tabloid::ReportColumn.new(:col1, "Column 1"), Tabloid::ReportColumn.new(:col2, "Column 2")] }
       let(:row1) { Tabloid::Row.new(:columns => columns, :data => [1, 2]) }

@@ -104,19 +104,33 @@ module Tabloid
     end
 
     def summary_rows
-      data_summary = report_columns.map do |col|
+      [Tabloid::HeaderRow.new(summary_label, :column_count => visible_column_count)].tap do |result|
+        if total_present?
+          result.push Tabloid::Row.new(:columns => @report_columns, :data => data_summary)
+        end
+      end
+    end
+
+    def summary_label
+      ['Totals',  cardinality_label].compact.join ' '
+    end
+
+    def cardinality_label
+      return nil unless cardinality_present?
+
+      cardinality = rows.map(&:cardinality).inject(&:+) || 0
+      units = cardinality > 1 ? "#{@grouping_options[:cardinality]}s" :
+                                @cardinality_label
+
+      "(#{cardinality} #{units})"
+    end
+
+    def data_summary
+      report_columns.map do |col|
         if summarizer = @summary_options[col.key]
           summarize(col.key, self.send(summarizer)) unless col.hidden?
         end
-
       end
-      [
-          Tabloid::HeaderRow.new("Totals", :column_count => visible_column_count),
-          Tabloid::Row.new(:columns => @report_columns,
-                           :data    => data_summary)
-
-      ]
-
     end
 
     def visible_column_count
@@ -128,6 +142,14 @@ module Tabloid
     end
 
     def summary_present?
+      total_present? || cardinality_present?
+    end
+
+    def cardinality_present?
+      !!@grouping_options[:cardinality]
+    end
+
+    def total_present?
       !@summary_options.empty?
     end
   end
