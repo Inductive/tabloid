@@ -8,22 +8,19 @@ class Tabloid::Group
     @rows                 = options[:rows]
     @columns              = options[:columns]
     @visible_column_count = @columns.count { |col| !col.hidden? }
-    @total_required       = options[:total]
+    @total_required       = !!options[:total]
+    @cardinality_required = !!options[:cardinality]
+    @cardinality_label    = options[:cardinality]
     @label                = options[:label]
     raise ArgumentError.new("Must supply row data to a Group") unless @rows
   end
 
-  def total_required?
-    !!@total_required
+  def rows
+    @rows.dup + total_rows
   end
 
-  def rows
-    if total_required?
-      summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
-      @rows + [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
-    else
-      @rows
-    end
+  def cardinality
+    @rows.size
   end
 
   def summarize(key, &block)
@@ -46,24 +43,50 @@ class Tabloid::Group
     @rows[1..-1].inject(@rows[0][key]) { |sum, row| sum + row[key] }
   end
 
+  def total_rows
+    return [] unless @total_required
+
+    summed_data = columns.map { |col| col.total? ? sum_rows(col.key) : nil }
+    [Tabloid::Row.new(:data => summed_data, :columns => self.columns)]
+  end
+
   def header_row_csv
-    if @label
-      cols = [label]
-      (@visible_column_count-1).times{ cols << nil}
-      FasterCSV.generate{|csv| csv<<cols}
-    else
-      ""
-    end
+    return '' unless header_present?
+
+    cols = [header_content]
+    (@visible_column_count-1).times{ cols << nil}
+    FasterCSV.generate{|csv| csv<<cols}
   end
 
   def header_row_html
-    if @label
-      html = Builder::XmlMarkup.new
-      html.tr(:class => "group_header") do |tr|
-        tr.td(label, {"colspan" => @visible_column_count})
-      end
-    else
-      ""
+    return '' unless header_present?
+
+    html = Builder::XmlMarkup.new
+    html.tr(:class => "group_header") do |tr|
+      tr.td(header_content, {"colspan" => @visible_column_count})
     end
+  end
+
+  def header_present?
+    @label || @cardinality_required
+  end
+
+  def header_content
+    case [!!@label, !!@cardinality_required]
+      when [true, true] then "#{@label} (#{cardinality_content})"
+      when [true, false] then @label
+      when [false, true] then cardinality_content
+      else ''
+    end
+  end
+
+  def cardinality_content
+    label = if @rows.size > 1 && @cardinality_label
+              "#{@cardinality_label}s"
+            else
+              @cardinality_label
+            end
+
+    [@rows.size, label].join ' '
   end
 end
