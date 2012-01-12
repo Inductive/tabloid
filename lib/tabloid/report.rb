@@ -128,7 +128,7 @@ EOS
     end
 
     def to_html
-      "<table>#{data.to_html}</table>"
+      "<table id='#{self.class.to_s.underscore}_table'>#{data.to_html}</table>"
     end
 
     def to_csv
