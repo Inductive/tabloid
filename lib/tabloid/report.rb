@@ -128,7 +128,7 @@ EOS
     end
 
     def to_html
-      "<table id='#{self.class.to_s.underscore}_table'>#{data.to_html}</table>"
+      "<table id='#{generate_html_id}_table'>#{data.to_html}</table>"
     end
 
     def to_csv
@@ -255,6 +255,14 @@ EOS
         end
       end
       html.to_s
+    end
+
+    def generate_html_id
+      class_name = self.class.to_s
+      class_name.gsub!(/::/, '-')
+      class_name.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+      class_name.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+      class_name.downcase!
     end
   end
 end
