@@ -49,7 +49,12 @@ module Tabloid
     end
 
     def label_for(key)
-      key == :default ? false : key
+      return false if key == :default
+      if @grouping_options[:label]
+        @grouping_options[:label].call
+      else
+        key
+      end
     end
 
     def csv_with_summary
