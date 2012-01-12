@@ -92,7 +92,7 @@ module Tabloid::Report
           </div>
         </body>
       </html>
-EOS
+    EOS
 
     def prepare(options={})
       before_prepare if self.respond_to?(:before_prepare)
@@ -201,7 +201,6 @@ EOS
     end
 
     def build_and_cache_data
-
       @data ||= begin
         report_data = Tabloid::Data.new(
             :report_columns   => self.report_columns,
