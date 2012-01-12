@@ -65,6 +65,19 @@ describe Tabloid::Data do
           csv_rows.should include(["Totals (2 foos)", nil])
         end
       end
+      context "[label options is presented]" do
+        let(:data) do
+          Tabloid::Data.new(:report_columns => columns,
+                            :rows => rows,
+                            :grouping_key => :col1,
+                            :grouping_options => { :label => lambda{|val| val.to_s + '_label_added'} })
+        end
+        it "changes default label" do
+          csv_rows = FasterCSV.parse(data.to_csv)
+          csv_rows.should include(["1_label_added", nil])
+          csv_rows.should include(["3_label_added", nil])
+        end
+      end
       context "[cardinality options is presented]" do
         let(:data) do
           Tabloid::Data.new(:report_columns => columns,

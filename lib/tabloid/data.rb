@@ -51,7 +51,7 @@ module Tabloid
     def label_for(key)
       return false if key == :default
       if @grouping_options[:label]
-        @grouping_options[:label].call
+        @grouping_options[:label].call(key)
       else
         key
       end
