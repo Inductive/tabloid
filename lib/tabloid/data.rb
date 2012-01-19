@@ -9,11 +9,11 @@ module Tabloid
 
       @report_columns   = options[:report_columns]
       @grouping_key     = options[:grouping_key]
-      @grouping_options = options[:grouping_options] || {}
+      @grouping_options = options[:grouping_options].try(:dup) || {}
       @summary_options  = options[:summary] || {}
 
       @rows = convert_rows(options[:rows])
-
+      @grouping_options.delete(:label)
     end
 
     def to_csv
@@ -50,6 +50,7 @@ module Tabloid
 
     def label_for(key)
       return false if key == :default
+
       if @grouping_options[:label]
         @grouping_options[:label].call(key)
       else
