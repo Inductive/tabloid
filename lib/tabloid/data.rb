@@ -9,7 +9,7 @@ module Tabloid
 
       @report_columns   = options[:report_columns]
       @grouping_key     = options[:grouping_key]
-      @grouping_options = options[:grouping_options].try(:dup) || {}
+      @grouping_options = (options[:grouping_options] && options[:grouping_options].dup) || {}
       @summary_options  = options[:summary] || {}
 
       @rows = convert_rows(options[:rows])
@@ -144,7 +144,16 @@ module Tabloid
     end
 
     def sum
-      proc(&:+)
+      proc do |accumulator, entry|
+        if accumulator && entry
+          accumulator += entry
+          accumulator
+        elsif entry
+          entry
+        else
+          accumulator
+        end
+      end
     end
 
     def summary_present?

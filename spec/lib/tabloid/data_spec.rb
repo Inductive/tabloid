@@ -39,6 +39,19 @@ describe Tabloid::Data do
           (doc/"tr.summary td.col2").text.should == "6"
         end
       end
+      context "[sparse matrix]" do
+        let :data do
+          Tabloid::Data.new :report_columns =>  [Tabloid::ReportColumn.new(:col1, "Column 1"),
+                                                 Tabloid::ReportColumn.new(:col2, "Column 2")],
+                            :rows => [['a', 2], ['b', nil], ['c', 3]],
+                            :summary => { :col2 => :sum }
+        end
+        it "should handle nil value" do
+          csv_rows = FasterCSV.parse data.to_csv
+          csv_rows.should include(["Totals", nil])
+          csv_rows.should include([nil, "5"])
+        end
+      end
       context "[summary options is not presented]" do
         let(:data) { Tabloid::Data.new(:report_columns => columns, :rows => rows ) }
 
