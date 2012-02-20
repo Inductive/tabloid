@@ -144,7 +144,16 @@ module Tabloid
     end
 
     def sum
-      proc(&:+)
+      proc do |accumulator, entry|
+        if accumulator && entry
+          accumulator += entry
+          accumulator
+        elsif entry
+          entry
+        else
+          accumulator
+        end
+      end
     end
 
     def summary_present?
