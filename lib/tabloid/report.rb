@@ -4,9 +4,6 @@ module Tabloid::Report
 
   def self.included(base)
     base.class_eval do
-      @report_parameters = []
-      @report_columns    = []
-      @report_columns.extend Tabloid::ColumnExtensions
       extend Tabloid::Report::ClassMethods
       include Tabloid::Report::InstanceMethods
     end
@@ -18,8 +15,12 @@ module Tabloid::Report
     end
     
     def set_parameter(param)
-      @report_parameters = [] if @report_parameters.nil?
+      parameters_initialize
       @report_parameters << param
+    end
+
+    def parameters_initialize
+      @report_parameters ||= []
     end
 
     def store_parameters(attribute)
@@ -63,11 +64,15 @@ module Tabloid::Report
     end
     
     def set_element(elem)
+      columns_initialize
+      @report_columns << elem
+    end
+
+    def columns_initialize
       if @report_columns.nil?
         @report_columns    = []
         @report_columns.extend Tabloid::ColumnExtensions
       end
-      @report_columns << elem
     end
 
     def formatting_by(obj)
@@ -147,12 +152,15 @@ module Tabloid::Report
     end
 
     def to_csv
-      csv_result = FasterCSV.generate do |csv|
+      params_csv + data.to_csv
+    end
+
+    def params_csv
+      FasterCSV.generate do |csv|
         csv << [self.provider.name]
         formatted_parameters.to_a.each{ |report_param| csv << report_param }
         csv << []
       end
-      csv_result + data.to_csv
     end
 
     def to_pdf
