@@ -14,7 +14,12 @@ module Tabloid::Report
 
   module ClassMethods
     def parameter(*args)
-      @report_parameters << Tabloid::Parameter.new(*args)
+      set_parameter Tabloid::Parameter.new(*args)
+    end
+    
+    def set_parameter(param)
+      @report_parameters = [] if @report_parameters.nil?
+      @report_parameters << param
     end
 
     def store_parameters(attribute)
@@ -54,7 +59,15 @@ module Tabloid::Report
     def element(key, label = "", options={})
       updated_options = options.dup
       updated_options.update(:formatting_by => @formatting_by) if options[:formatting_by].nil?
-      @report_columns << Tabloid::ReportColumn.new(key, label, updated_options)
+      set_element Tabloid::ReportColumn.new(key, label, updated_options)
+    end
+    
+    def set_element(elem)
+      if @report_columns.nil?
+        @report_columns    = []
+        @report_columns.extend Tabloid::ColumnExtensions
+      end
+      @report_columns << elem
     end
 
     def formatting_by(obj)
@@ -253,14 +266,31 @@ module Tabloid::Report
     def parameter_info_html
       html = Builder::XmlMarkup.new
       html = html.p("id" => "parameters") do |p|
-        parameters.each do |param|
+        formatted_parameters.each do |param|
           p.div do |div|
-            div.span(param.label, "class" => "parameter_label")
-            div.span(parameter(param.key), "class" => "parameter_value")
+            div.span(param[0], "class" => "parameter_label")
+            div.span(param[1], "class" => "parameter_value", "style" => "padding-left: 10px;")
           end
         end
       end
       html.to_s
+    end
+    
+    def formatted_parameters
+      displayed_parameters.map{ |param| [param.label, format_parameter(param)] }
+    end
+
+    def format_parameter(param)
+      parameter(param.key)
+    end
+
+    def displayed_parameters
+      params = self.parameters.select { |param| displayed?(param) }
+      params
+    end
+    
+    def displayed?(param)
+      true
     end
 
     def generate_html_id
