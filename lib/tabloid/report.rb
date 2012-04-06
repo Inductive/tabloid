@@ -4,9 +4,6 @@ module Tabloid::Report
 
   def self.included(base)
     base.class_eval do
-      @report_parameters = []
-      @report_columns    = []
-      @report_columns.extend Tabloid::ColumnExtensions
       extend Tabloid::Report::ClassMethods
       include Tabloid::Report::InstanceMethods
     end
@@ -14,7 +11,16 @@ module Tabloid::Report
 
   module ClassMethods
     def parameter(*args)
-      @report_parameters << Tabloid::Parameter.new(*args)
+      set_parameter Tabloid::Parameter.new(*args)
+    end
+    
+    def set_parameter(param)
+      parameters_initialize
+      @report_parameters << param
+    end
+
+    def parameters_initialize
+      @report_parameters ||= []
     end
 
     def store_parameters(attribute)
@@ -54,7 +60,19 @@ module Tabloid::Report
     def element(key, label = "", options={})
       updated_options = options.dup
       updated_options.update(:formatting_by => @formatting_by) if options[:formatting_by].nil?
-      @report_columns << Tabloid::ReportColumn.new(key, label, updated_options)
+      set_element Tabloid::ReportColumn.new(key, label, updated_options)
+    end
+    
+    def set_element(elem)
+      columns_initialize
+      @report_columns << elem
+    end
+
+    def columns_initialize
+      if @report_columns.nil?
+        @report_columns    = []
+        @report_columns.extend Tabloid::ColumnExtensions
+      end
     end
 
     def formatting_by(obj)
@@ -86,6 +104,7 @@ module Tabloid::Report
         <header>
         </header>
         <body>
+          <h1>%s</h1>
           <h1>%s</h1>
           <div id='report'>
             %s
@@ -128,11 +147,20 @@ module Tabloid::Report
     end
 
     def to_html
-      "<table id='#{generate_html_id}_table'>#{data.to_html}</table>"
+      table_string = "<table id='#{generate_html_id}_table'>#{data.to_html}</table>"
+      parameter_info_html + table_string
     end
 
     def to_csv
-      data.to_csv
+      params_csv + data.to_csv
+    end
+
+    def params_csv
+      FasterCSV.generate do |csv|
+        csv << [self.provider.name]
+        formatted_parameters.to_a.each{ |report_param| csv << report_param }
+        csv << []
+      end
     end
 
     def to_pdf
@@ -155,7 +183,7 @@ module Tabloid::Report
     private
 
     def to_complete_html
-      HTML_FRAME % [self.name, self.to_html]
+      HTML_FRAME % [self.name, self.provider.name, self.to_html]
     end
 
     def cache_data(data)
@@ -246,14 +274,31 @@ module Tabloid::Report
     def parameter_info_html
       html = Builder::XmlMarkup.new
       html = html.p("id" => "parameters") do |p|
-        parameters.each do |param|
+        formatted_parameters.each do |param|
           p.div do |div|
-            div.span(param.label, "class" => "parameter_label")
-            div.span(parameter(param.key), "class" => "parameter_value")
+            div.span(param[0], "class" => "parameter_label")
+            div.span(param[1], "class" => "parameter_value", "style" => "padding-left: 10px;")
           end
         end
       end
       html.to_s
+    end
+    
+    def formatted_parameters
+      displayed_parameters.map{ |param| [param.label, format_parameter(param)] }
+    end
+
+    def format_parameter(param)
+      parameter(param.key)
+    end
+
+    def displayed_parameters
+      params = self.parameters.select { |param| displayed?(param) }
+      params
+    end
+    
+    def displayed?(param)
+      true
     end
 
     def generate_html_id
