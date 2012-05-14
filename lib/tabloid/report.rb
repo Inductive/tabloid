@@ -54,6 +54,7 @@ module Tabloid::Report
     end
 
     def rows(*args, &block)
+      parameters_initialize
       @rows_block = block
     end
 
